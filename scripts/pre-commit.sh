@@ -130,12 +130,79 @@ generate_python_proto() {
 generate_go_proto || true      # Continue even if Go proto generation fails
 generate_python_proto || true  # Continue even if Python proto generation fails
 
+# Track if any Python files were formatted
+PYTHON_FORMATTED=false
+
+# Function to run ruff format and check on backend
+run_ruff_format() {
+  echo ""
+  echo "🎨 Pre-commit: Running ruff format on backend..."
+  cd "$REPO_ROOT/backend"
+
+  # Check if uv is available
+  if ! command -v uv &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Warning: uv not found. Skipping ruff format.${NC}"
+    echo "     Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    return 1
+  fi
+
+  # Run ruff format to auto-format files
+  uv run ruff format app/ > /dev/null 2>&1
+
+  # Check if any files were modified
+  if ! git diff --quiet app/; then
+    PYTHON_FORMATTED=true
+    git add app/
+    echo -e "  ${GREEN}✓${NC} Python files formatted and staged"
+  else
+    echo "  ✓ Python files already formatted"
+  fi
+}
+
+# Function to run ruff check on backend
+run_ruff_check() {
+  echo ""
+  echo "🔍 Pre-commit: Running ruff check on backend..."
+  cd "$REPO_ROOT/backend"
+
+  # Check if uv is available
+  if ! command -v uv &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Warning: uv not found. Skipping ruff check.${NC}"
+    return 1
+  fi
+
+  # Run ruff check
+  if uv run ruff check app/ --quiet; then
+    echo -e "  ${GREEN}✓${NC} All linting checks passed"
+    return 0
+  else
+    echo ""
+    echo -e "${RED}❌ Ruff linting errors found!${NC}"
+    echo ""
+    echo "Please fix the linting errors above before committing."
+    echo "Run: cd backend && uv run ruff check app/"
+    echo ""
+    return 1
+  fi
+}
+
+# Run ruff format and check
+run_ruff_format || true  # Continue even if format fails
+if ! run_ruff_check; then
+  exit 1  # Fail commit if linting errors exist
+fi
+
 # Summary
 echo ""
-if [ "$PROTO_MODIFIED" = true ]; then
-  echo -e "${GREEN}✓ Proto files regenerated and staged for commit${NC}"
+if [ "$PROTO_MODIFIED" = true ] || [ "$PYTHON_FORMATTED" = true ]; then
+  if [ "$PROTO_MODIFIED" = true ]; then
+    echo -e "${GREEN}✓ Proto files regenerated and staged for commit${NC}"
+  fi
+  if [ "$PYTHON_FORMATTED" = true ]; then
+    echo -e "${GREEN}✓ Python files formatted and staged for commit${NC}"
+  fi
 else
-  echo -e "✓ All proto files are up-to-date"
+  echo -e "✓ All files are up-to-date"
 fi
 
 # Return to repo root
