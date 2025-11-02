@@ -91,10 +91,11 @@ async def span_ingestion_poller() -> None:
                         processed_spans.append(span)
                     except Exception as e:
                         logger.warning(
-                            f"Error unmarshaling span: {e}",
+                            "Error unmarshaling span",
                             extra={
                                 "key_ulid": span_with_resource.key_ulid.hex(),
                                 "error": str(e),
+                                "error_type": type(e).__name__,
                             },
                         )
                         continue  # Skip corrupted span
@@ -124,8 +125,11 @@ async def span_ingestion_poller() -> None:
                             )
                     except Exception as e:
                         logger.warning(
-                            f"Error extracting service name: {e}, using default",
-                            extra={"error": str(e)},
+                            "Error extracting service name, using default",
+                            extra={
+                                "error": str(e),
+                                "error_type": type(e).__name__,
+                            },
                         )
 
                 # 5. Process spans in batch (with transaction)
@@ -149,19 +153,24 @@ async def span_ingestion_poller() -> None:
 
                 except Exception as e:
                     logger.error(
-                        f"Error processing spans: {e}",
+                        "Error processing spans",
                         extra={
                             "batch_size": len(processed_spans),
                             "service_name": service_name,
                             "error": str(e),
+                            "error_type": type(e).__name__,
                         },
                     )
                     # Don't update state - retry batch on next poll
 
             except Exception as e:
                 logger.error(
-                    f"Error in poll cycle: {e}",
-                    extra={"error": str(e), "last_key": last_key.hex() if last_key else "None"},
+                    "Error in poll cycle",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "last_key": last_key.hex() if last_key else "None",
+                    },
                 )
                 continue  # Continue polling on error
 

@@ -56,7 +56,10 @@ class InternalAuthServicer(auth_pb2_grpc.InternalAuthServiceServicer):
 
         except Exception as e:
             # Database error - fail closed (deny access)
-            logger.error(f"Database error during API key validation: {e}")
+            logger.error(
+                "Database error during API key validation",
+                extra={"error": str(e), "error_type": type(e).__name__},
+            )
 
             # Return False instead of raising error (fail closed)
             # The ingestion-service will treat this as invalid

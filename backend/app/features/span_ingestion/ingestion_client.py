@@ -81,7 +81,10 @@ class IngestionClient:
             self.stub = ingestion_pb2_grpc.InternalIngestionServiceStub(self.channel)
             logger.info(f"Connected to ingestion service at {self.address}")
         except Exception as e:
-            logger.error(f"Failed to connect to ingestion service: {e}")
+            logger.error(
+                "Failed to connect to ingestion service",
+                extra={"error": str(e), "error_type": type(e).__name__, "address": self.address},
+            )
             raise
 
     async def close(self) -> None:
@@ -138,10 +141,17 @@ class IngestionClient:
 
         except grpc.aio.AioRpcError as e:
             logger.error(
-                f"gRPC error reading spans: {e.code()} - {e.details()}",
-                extra={"code": e.code(), "details": e.details()},
+                "gRPC error reading spans",
+                extra={
+                    "code": str(e.code()),
+                    "details": e.details(),
+                    "error_type": type(e).__name__,
+                },
             )
             raise
         except Exception as e:
-            logger.error(f"Unexpected error reading spans: {e}")
+            logger.error(
+                "Unexpected error reading spans",
+                extra={"error": str(e), "error_type": type(e).__name__},
+            )
             raise

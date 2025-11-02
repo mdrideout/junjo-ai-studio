@@ -450,11 +450,13 @@ def process_state_patches(
                 )
             except Exception as e:
                 logger.error(
-                    f"Failed to insert state patch: {e}",
+                    "Failed to insert state patch",
                     extra={
                         "trace_id": trace_id,
                         "span_id": span_id,
                         "event_time": event.time_unix_nano,
+                        "error": str(e),
+                        "error_type": type(e).__name__,
                     },
                 )
                 # Note: Go implementation logs but continues
@@ -502,5 +504,13 @@ def process_span_batch(service_name: str, spans: list[trace_pb2.Span]) -> None:
 
         except Exception as e:
             conn.execute("ROLLBACK")
-            logger.error(f"Failed to process span batch: {e}")
+            logger.error(
+                "Failed to process span batch",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "batch_size": len(spans),
+                    "service_name": service_name,
+                },
+            )
             raise
