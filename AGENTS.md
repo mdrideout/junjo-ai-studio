@@ -2220,6 +2220,13 @@ The database layer uses SQLAlchemy 2.0+ with async support and follows a reposit
 **Test markers:**
 - `@pytest.mark.unit` - Fast, isolated unit tests
 - `@pytest.mark.integration` - Integration tests that use real database
+- `@pytest.mark.requires_grpc_server` - Tests requiring gRPC server on port 50053
+- `@pytest.mark.security` - Security tests (auth bypass, SQL injection)
+- `@pytest.mark.concurrency` - Concurrency and race condition tests
+- `@pytest.mark.error_recovery` - Error recovery and resilience tests
+- `@pytest.mark.requires_gemini_api` - Tests requiring `GEMINI_API_KEY` environment variable
+- `@pytest.mark.requires_openai_api` - Tests requiring `OPENAI_API_KEY` environment variable
+- `@pytest.mark.requires_anthropic_api` - Tests requiring `ANTHROPIC_API_KEY` environment variable
 
 **Database isolation:**
 - Integration tests automatically get isolated temporary databases via autouse fixture
@@ -2268,6 +2275,42 @@ markers = [
     "integration: Integration tests (slower, uses real DB)",
 ]
 ```
+
+**Running the full test suite:**
+
+The easiest way to run all backend tests including gRPC integration tests:
+
+```bash
+# From repository root
+./run-backend-tests.sh
+```
+
+This automated script handles:
+- Temporary database setup
+- Migrations
+- Background server startup
+- All test categories (unit → integration → gRPC)
+- Server cleanup and result summary
+
+This is the **recommended approach** for running the complete test suite locally.
+
+**Manual test execution:**
+
+```bash
+# Unit tests only (fast, no dependencies)
+uv run pytest -m "unit" -v
+
+# Integration tests without gRPC (database only)
+uv run pytest -m "integration and not requires_grpc_server" -v
+
+# gRPC integration tests (requires backend running on port 50053)
+uv run pytest -m "requires_grpc_server" -v
+
+# All tests (requires backend running + API keys)
+uv run pytest -v
+```
+
+See `backend/README.md` for detailed testing instructions.
 
 ### Shared Code
 
