@@ -14,7 +14,6 @@ from app.db_sqlite.api_keys.schemas import APIKeyCreate, APIKeyRead
 from app.features.api_keys.service import APIKeyService
 from app.features.auth.dependencies import CurrentUser
 
-
 router = APIRouter(prefix="/api_keys", tags=["api_keys"])
 
 

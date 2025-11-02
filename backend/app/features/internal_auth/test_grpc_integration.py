@@ -6,8 +6,8 @@ request/response flow with actual database access.
 """
 
 import grpc
-from loguru import logger
 import pytest
+from loguru import logger
 
 from app.config.settings import settings
 from app.proto_gen import auth_pb2, auth_pb2_grpc

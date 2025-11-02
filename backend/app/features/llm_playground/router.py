@@ -4,15 +4,14 @@ LLM Playground router.
 Provides unified LLM generation endpoint and model discovery endpoints.
 """
 
-from fastapi import APIRouter, HTTPException, status
 import httpx
+from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 
 from app.features.auth.dependencies import CurrentUser
 from app.features.llm_playground.models import get_models_for_provider
 from app.features.llm_playground.schemas import GenerateRequest, GenerateResponse, ModelsResponse
 from app.features.llm_playground.service import LLMService
-
 
 router = APIRouter()
 

@@ -6,8 +6,8 @@ Note: Database isolation is handled automatically by the autouse fixture in conf
 Each test gets its own temporary SQLite database that is cleaned up after the test.
 """
 
-from httpx import ASGITransport, AsyncClient
 import pytest
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
