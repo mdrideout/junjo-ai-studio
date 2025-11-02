@@ -199,7 +199,7 @@ engine = create_async_engine(...)  # Simple, clean, validated pattern
 result = await session.execute(delete_stmt)
 return result.rowcount  # type: ignore[union-attr]  # This is CORRECT
 ```
-These type ignore comments are **not** gitignore - they're directives for Python's static type checker (mypy/Pylance).
+These type ignore comments are **not** gitignore - they're directives for Python's static type checker (Pylance/Pyright).
 
 **Why they're needed:**
 - `AsyncSession.execute()` returns `Result[Any]` (generic type)
