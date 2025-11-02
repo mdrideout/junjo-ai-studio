@@ -23,28 +23,16 @@ class APIKeyTable(Base):
 
     # Primary key
     id: Mapped[str] = mapped_column(
-        String(22),
-        primary_key=True,
-        default=lambda: generate_id(size=22)
+        String(22), primary_key=True, default=lambda: generate_id(size=22)
     )
 
     # Key value (64-char alphanumeric nanoid)
-    key: Mapped[str] = mapped_column(
-        String(64),
-        nullable=False,
-        unique=True,
-        index=True
-    )
+    key: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
 
     # Human-readable name
-    name: Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
 
     # Timestamp
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        server_default=func.now(),
-        nullable=False
+        DateTime, server_default=func.now(), nullable=False
     )

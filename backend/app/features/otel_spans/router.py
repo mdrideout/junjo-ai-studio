@@ -61,9 +61,7 @@ async def get_service_spans(
 @router.get("/services/{service_name}/spans/root", response_model=list[dict[str, Any]])
 async def get_root_spans(
     service_name: str,
-    has_llm: bool = Query(
-        default=False, description="Filter for traces containing LLM operations"
-    ),
+    has_llm: bool = Query(default=False, description="Filter for traces containing LLM operations"),
     limit: int = Query(default=500, ge=1, le=10000, description="Maximum spans to return"),
 ) -> list[dict[str, Any]]:
     """Get root spans (no parent) for a service.

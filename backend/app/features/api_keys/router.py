@@ -36,12 +36,16 @@ async def create_api_key(request: APIKeyCreate, authenticated_user: CurrentUser)
         HTTPException: 401 if not authenticated, 500 if creation fails
     """
     # Audit log at router layer (defense in depth)
-    audit_log(AuditAction.CREATE, AuditResource.API_KEY, None, authenticated_user, {"name": request.name})
+    audit_log(
+        AuditAction.CREATE, AuditResource.API_KEY, None, authenticated_user, {"name": request.name}
+    )
 
     logger.info(f"User {authenticated_user.email} creating API key: {request.name}")
 
     try:
-        api_key = await APIKeyService.create_api_key(name=request.name, authenticated_user=authenticated_user)
+        api_key = await APIKeyService.create_api_key(
+            name=request.name, authenticated_user=authenticated_user
+        )
         logger.info(f"Created API key: {api_key.id} by {authenticated_user.email}")
         return api_key
     except IntegrityError:

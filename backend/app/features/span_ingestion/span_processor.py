@@ -168,9 +168,7 @@ def convert_otlp_value(value: common_pb2.AnyValue) -> Any:
                 elif item.HasField("bool_value"):
                     arr.append(item.bool_value)
                 else:
-                    logger.warning(
-                        f"Unsupported array element type: {item.WhichOneof('value')}"
-                    )
+                    logger.warning(f"Unsupported array element type: {item.WhichOneof('value')}")
             return arr
 
         case "kvlist_value":
@@ -274,9 +272,7 @@ def filter_junjo_attributes(
     return [attr for attr in attributes if attr.key not in JUNJO_FILTERED_ATTRIBUTES]
 
 
-def process_single_span(
-    conn, service_name: str, span: trace_pb2.Span
-) -> tuple[str, str, str, str]:
+def process_single_span(conn, service_name: str, span: trace_pb2.Span) -> tuple[str, str, str, str]:
     """Process a single OTLP span and insert into DuckDB.
 
     This function:
@@ -339,19 +335,13 @@ def process_single_span(
     junjo_graph_structure = "{}"
     junjo_wf_store_id = ""
     if junjo_span_type in ("workflow", "subflow"):
-        junjo_initial_state = extract_json_attribute(
-            span.attributes, "junjo.workflow.state.start"
-        )
-        junjo_final_state = extract_json_attribute(
-            span.attributes, "junjo.workflow.state.end"
-        )
+        junjo_initial_state = extract_json_attribute(span.attributes, "junjo.workflow.state.start")
+        junjo_final_state = extract_json_attribute(span.attributes, "junjo.workflow.state.end")
         junjo_graph_structure = extract_json_attribute(
             span.attributes, "junjo.workflow.graph_structure"
         )
         # Fix: Use extract_string_attribute for store.id (it's a string, not JSON)
-        junjo_wf_store_id = extract_string_attribute(
-            span.attributes, "junjo.workflow.store.id"
-        )
+        junjo_wf_store_id = extract_string_attribute(span.attributes, "junjo.workflow.store.id")
 
     # 6. Filter and Convert Attributes
     filtered_attributes = filter_junjo_attributes(span.attributes)
@@ -440,12 +430,8 @@ def process_state_patches(
         if event.name == "set_state":
             try:
                 event_time = convert_otlp_timestamp(event.time_unix_nano)
-                patch_json = extract_json_attribute(
-                    event.attributes, "junjo.state_json_patch"
-                )
-                patch_store_id = extract_string_attribute(
-                    event.attributes, "junjo.store.id"
-                )
+                patch_json = extract_json_attribute(event.attributes, "junjo.state_json_patch")
+                patch_store_id = extract_string_attribute(event.attributes, "junjo.store.id")
                 patch_id = str(uuid.uuid4())
 
                 conn.execute(

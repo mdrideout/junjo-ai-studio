@@ -49,6 +49,7 @@ class UserInDB(UserRead):
 
 # Auth-specific schemas
 
+
 class SignInRequest(BaseModel):
     """Schema for sign-in request."""
 

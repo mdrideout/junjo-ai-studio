@@ -36,16 +36,13 @@ def test_api_key():
         email="test@example.com",
         user_id="test_user_123",
         authenticated_at=datetime(2025, 1, 1, 12, 0, 0),
-        session_id="test_session_abc123"
+        session_id="test_session_abc123",
     )
 
     # Create the key in the database synchronously
     async def create_key():
         await APIKeyRepository.create(
-            id=key_id,
-            key=api_key,
-            name="Integration Test Key",
-            authenticated_user=mock_user
+            id=key_id, key=api_key, name="Integration Test Key", authenticated_user=mock_user
         )
         return api_key
 

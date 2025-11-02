@@ -28,9 +28,7 @@ class PollerStateRepository:
             Last processed key as bytes, or None if no state exists
             (indicates poller should start from beginning)
         """
-        result = await self.session.execute(
-            select(PollerState.last_key).where(PollerState.id == 1)
-        )
+        result = await self.session.execute(select(PollerState.last_key).where(PollerState.id == 1))
         return result.scalar_one_or_none()
 
     async def upsert_last_key(self, last_key: bytes) -> None:

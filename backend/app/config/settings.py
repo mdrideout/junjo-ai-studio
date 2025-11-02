@@ -41,18 +41,13 @@ class DatabaseSettings(BaseSettings):
     """Database configuration"""
 
     sqlite_path: Annotated[
-        str,
-        Field(
-            default="../.dbdata/sqlite/junjo.db",
-            description="Path to SQLite database file"
-        )
+        str, Field(default="../.dbdata/sqlite/junjo.db", description="Path to SQLite database file")
     ]
     duckdb_path: Annotated[
         str,
         Field(
-            default="../.dbdata/duckdb/traces.duckdb",
-            description="Path to DuckDB database file"
-        )
+            default="../.dbdata/duckdb/traces.duckdb", description="Path to DuckDB database file"
+        ),
     ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -98,29 +93,25 @@ class SessionCookieSettings(BaseSettings):
         str,
         Field(
             description="Base64-encoded 32-byte encryption key for SecureCookiesMiddleware (Fernet/AES-256). "
-                        "Generate with: openssl rand -base64 32"
-        )
+            "Generate with: openssl rand -base64 32"
+        ),
     ]
     session_secret: Annotated[
         str,
         Field(
             description="Signing secret for SessionMiddleware (any length). "
-                        "Generate with: openssl rand -base64 32"
-        )
+            "Generate with: openssl rand -base64 32"
+        ),
     ]
     junjo_env: Annotated[
-        str,
-        Field(
-            default="development",
-            description="Environment (development/production)"
-        )
+        str, Field(default="development", description="Environment (development/production)")
     ]
     junjo_prod_auth_domain: Annotated[
         str,
         Field(
             default="",
-            description="Production auth domain for subdomain cookie support (e.g., 'junjo.io')"
-        )
+            description="Production auth domain for subdomain cookie support (e.g., 'junjo.io')",
+        ),
     ]
 
     @field_validator("secure_cookie_key", mode="before")
@@ -146,6 +137,7 @@ class SessionCookieSettings(BaseSettings):
 
         # Validate it's valid base64 and decodes to 32 bytes
         import base64
+
         try:
             # Try standard base64 first (openssl rand -base64 uses standard, not urlsafe)
             decoded = base64.b64decode(v)
@@ -175,21 +167,10 @@ class SessionCookieSettings(BaseSettings):
 class IngestionServiceSettings(BaseSettings):
     """Ingestion service gRPC connection settings"""
 
-    host: Annotated[
-        str,
-        Field(
-            default="localhost",
-            description="Ingestion service gRPC host"
-        )
-    ]
+    host: Annotated[str, Field(default="localhost", description="Ingestion service gRPC host")]
     port: Annotated[
         int,
-        Field(
-            default=50052,
-            ge=1,
-            le=65535,
-            description="Ingestion service internal gRPC port"
-        )
+        Field(default=50052, ge=1, le=65535, description="Ingestion service internal gRPC port"),
     ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -213,42 +194,20 @@ class SpanIngestionSettings(BaseSettings):
         str,
         Field(
             default="junjo-server-ingestion",
-            description="Ingestion service hostname for span reading"
-        )
+            description="Ingestion service hostname for span reading",
+        ),
     ]
     INGESTION_PORT: Annotated[
-        int,
-        Field(
-            default=50052,
-            ge=1,
-            le=65535,
-            description="Ingestion service gRPC port"
-        )
+        int, Field(default=50052, ge=1, le=65535, description="Ingestion service gRPC port")
     ]
     SPAN_POLL_INTERVAL: Annotated[
-        int,
-        Field(
-            default=5,
-            ge=1,
-            le=3600,
-            description="Span polling interval in seconds"
-        )
+        int, Field(default=5, ge=1, le=3600, description="Span polling interval in seconds")
     ]
     SPAN_BATCH_SIZE: Annotated[
-        int,
-        Field(
-            default=100,
-            ge=1,
-            le=10000,
-            description="Maximum spans to read per poll"
-        )
+        int, Field(default=100, ge=1, le=10000, description="Maximum spans to read per poll")
     ]
     SPAN_STRICT_MODE: Annotated[
-        bool,
-        Field(
-            default=False,
-            description="If True, fail entire batch on state patch errors"
-        )
+        bool, Field(default=False, description="If True, fail entire batch on state patch errors")
     ]
 
     model_config = SettingsConfigDict(
@@ -263,25 +222,13 @@ class LLMSettings(BaseSettings):
     """LLM provider API key configuration for LiteLLM"""
 
     openai_api_key: Annotated[
-        str | None,
-        Field(
-            default=None,
-            description="OpenAI API key (starts with sk-)"
-        )
+        str | None, Field(default=None, description="OpenAI API key (starts with sk-)")
     ]
     anthropic_api_key: Annotated[
-        str | None,
-        Field(
-            default=None,
-            description="Anthropic API key (starts with sk-ant-)"
-        )
+        str | None, Field(default=None, description="Anthropic API key (starts with sk-ant-)")
     ]
     gemini_api_key: Annotated[
-        str | None,
-        Field(
-            default=None,
-            description="Google AI Studio API key for Gemini models"
-        )
+        str | None, Field(default=None, description="Google AI Studio API key for Gemini models")
     ]
 
     model_config = SettingsConfigDict(
@@ -302,8 +249,8 @@ class AppSettings(BaseSettings):
             default=1323,
             ge=1,
             le=65535,
-            description="HTTP server port (internal container port, typically 1323)"
-        )
+            description="HTTP server port (internal container port, typically 1323)",
+        ),
     ]
 
     # gRPC Server
@@ -313,25 +260,15 @@ class AppSettings(BaseSettings):
             default=50053,
             ge=1,
             le=65535,
-            description="gRPC server port for internal authentication (50053)"
-        )
+            description="gRPC server port for internal authentication (50053)",
+        ),
     ]
 
     # Logging
     log_level: Annotated[
-        str,
-        Field(
-            default="info",
-            description="Log level: debug, info, warn, error"
-        )
+        str, Field(default="info", description="Log level: debug, info, warn, error")
     ]
-    log_format: Annotated[
-        str,
-        Field(
-            default="json",
-            description="Log format: json, text"
-        )
-    ]
+    log_format: Annotated[str, Field(default="json", description="Log format: json, text")]
 
     # CORS
     # Note: Type is str | list[str] to prevent Pydantic Settings from trying
@@ -341,45 +278,32 @@ class AppSettings(BaseSettings):
         Field(
             default=["http://localhost:5151"],
             description="Allowed CORS origins (comma-separated string or list)",
-            validation_alias=AliasChoices('junjo_allow_origins', 'cors_origins')
-        )
+            validation_alias=AliasChoices("junjo_allow_origins", "cors_origins"),
+        ),
     ]
 
     # Nested settings
     database: Annotated[
-        DatabaseSettings,
-        Field(
-            default_factory=DatabaseSettings,
-            description="Database settings"
-        )
+        DatabaseSettings, Field(default_factory=DatabaseSettings, description="Database settings")
     ]
     session_cookie: Annotated[
         SessionCookieSettings,
         Field(
             default_factory=SessionCookieSettings,
-            description="Session cookie and authentication settings"
-        )
+            description="Session cookie and authentication settings",
+        ),
     ]
     ingestion: Annotated[
         IngestionServiceSettings,
-        Field(
-            default_factory=IngestionServiceSettings,
-            description="Ingestion service settings"
-        )
+        Field(default_factory=IngestionServiceSettings, description="Ingestion service settings"),
     ]
     span_ingestion: Annotated[
         SpanIngestionSettings,
-        Field(
-            default_factory=SpanIngestionSettings,
-            description="Span ingestion poller settings"
-        )
+        Field(default_factory=SpanIngestionSettings, description="Span ingestion poller settings"),
     ]
     llm: Annotated[
         LLMSettings,
-        Field(
-            default_factory=LLMSettings,
-            description="LLM provider API keys for LiteLLM"
-        )
+        Field(default_factory=LLMSettings, description="LLM provider API keys for LiteLLM"),
     ]
 
     @field_validator("cors_origins", mode="before")
@@ -396,6 +320,7 @@ class AppSettings(BaseSettings):
         if isinstance(v, str):
             # Handle JSON array string from env var
             import json
+
             try:
                 return json.loads(v)
             except json.JSONDecodeError:

@@ -55,7 +55,7 @@ def set_sqlite_pragmas(dbapi_connection, connection_record):
 # CRITICAL: expire_on_commit=False prevents lazy loading errors in async contexts
 async_session = async_sessionmaker(
     engine,
-    expire_on_commit=False  # ⚠️ REQUIRED for asyncio safety
+    expire_on_commit=False,  # ⚠️ REQUIRED for asyncio safety
 )
 
 logger.info(f"Database engine created: {settings.database.sqlite_path}")

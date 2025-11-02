@@ -20,9 +20,7 @@ class PollerState(Base):
     __tablename__ = "poller_state"
 
     id = Column(Integer, primary_key=True)
-    last_key = Column(
-        LargeBinary, nullable=True
-    )  # ULID bytes, NULL = start from beginning
+    last_key = Column(LargeBinary, nullable=True)  # ULID bytes, NULL = start from beginning
 
     __table_args__ = (CheckConstraint("id = 1", name="single_row_check"),)
 

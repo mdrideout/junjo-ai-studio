@@ -134,5 +134,7 @@ async def refresh_provider_models(provider: str, authenticated_user: CurrentUser
             detail=f"Failed to refresh models from {provider} API",
         )
     except Exception as e:
-        logger.error("Unexpected error refreshing models for {}: {}", provider, str(e), exc_info=True)
+        logger.error(
+            "Unexpected error refreshing models for {}: {}", provider, str(e), exc_info=True
+        )
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

@@ -22,7 +22,9 @@ class APIKeyRepository:
     """
 
     @staticmethod
-    async def create(id: str, key: str, name: str, authenticated_user: AuthenticatedUser) -> APIKeyRead:
+    async def create(
+        id: str, key: str, name: str, authenticated_user: AuthenticatedUser
+    ) -> APIKeyRead:
         """Create a new API key.
 
         Args:
@@ -46,19 +48,11 @@ class APIKeyRepository:
         """
         # Audit log at repository layer (defense in depth - database operation)
         audit_log(
-            AuditAction.DB_INSERT,
-            AuditResource.API_KEY,
-            id,
-            authenticated_user,
-            {"name": name}
+            AuditAction.DB_INSERT, AuditResource.API_KEY, id, authenticated_user, {"name": name}
         )
 
         try:
-            db_obj = APIKeyTable(
-                id=id,
-                key=key,
-                name=name
-            )
+            db_obj = APIKeyTable(id=id, key=key, name=name)
 
             async with db_config.async_session() as session:
                 session.add(db_obj)

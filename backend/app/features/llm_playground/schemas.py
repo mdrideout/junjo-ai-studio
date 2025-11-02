@@ -29,7 +29,7 @@ class GenerateRequest(BaseModel):
     model: str = Field(
         ...,
         description="Model with provider prefix (e.g., 'gemini/gemini-2.5-flash', 'openai/gpt-4o')",
-        pattern=r"^[a-z_]+/[a-z0-9._-]+$"
+        pattern=r"^[a-z_]+/[a-z0-9._-]+$",
     )
     messages: list[Message] = Field(..., description="Chat messages")
 
@@ -43,7 +43,7 @@ class GenerateRequest(BaseModel):
     reasoning_effort: str | None = Field(
         None,
         description="Reasoning effort: 'minimal', 'low', 'medium', 'high'. Auto-translates to provider thinking.",
-        pattern="^(minimal|low|medium|high)$"
+        pattern="^(minimal|low|medium|high)$",
     )
 
     # OpenAI-specific (for reasoning models)
@@ -53,7 +53,9 @@ class GenerateRequest(BaseModel):
 
     # JSON mode / Structured outputs
     json_mode: bool = Field(False, description="Enable JSON output mode")
-    json_schema: dict[str, Any] | None = Field(None, description="JSON schema for structured output")
+    json_schema: dict[str, Any] | None = Field(
+        None, description="JSON schema for structured output"
+    )
 
 
 class Usage(BaseModel):

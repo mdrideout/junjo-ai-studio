@@ -23,42 +23,23 @@ class UserTable(Base):
 
     # Primary key
     id: Mapped[str] = mapped_column(
-        String(22),
-        primary_key=True,
-        default=lambda: generate_id(size=22)
+        String(22), primary_key=True, default=lambda: generate_id(size=22)
     )
 
     # Required fields
-    email: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        unique=True,
-        index=True
-    )
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
 
     # Password hash (bcrypt)
-    password_hash: Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
     # Account status
-    is_active: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        default=True
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        server_default=func.now(),
-        nullable=False
+        DateTime, server_default=func.now(), nullable=False
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )

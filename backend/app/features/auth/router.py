@@ -98,9 +98,7 @@ async def sign_in(sign_in_request: SignInRequest, request: Request):
     logger.info(f"Sign-in request for email: {sign_in_request.email}")
 
     # Validate credentials
-    user = await AuthService.validate_credentials(
-        sign_in_request.email, sign_in_request.password
-    )
+    user = await AuthService.validate_credentials(sign_in_request.email, sign_in_request.password)
     if user is None:
         logger.warning(f"Failed to validate credentials for: {sign_in_request.email}")
         raise HTTPException(
@@ -160,9 +158,7 @@ async def auth_test(current_user: CurrentUser):
 
 
 @router.post("/users", response_model=UserResponse)
-async def create_user(
-    request: CreateUserRequest, authenticated_user: CurrentUser
-):
+async def create_user(request: CreateUserRequest, authenticated_user: CurrentUser):
     """
     Create a new user (auth required).
 
@@ -180,9 +176,7 @@ async def create_user(
     """
     try:
         await AuthService.create_user(request.email, request.password, authenticated_user)
-        logger.info(
-            f"User created by {authenticated_user.email}: {request.email}"
-        )
+        logger.info(f"User created by {authenticated_user.email}: {request.email}")
         return UserResponse(message="User created successfully")
     except IntegrityError:
         raise HTTPException(

@@ -153,7 +153,10 @@ async def fetch_anthropic_models() -> list[ModelInfo]:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://api.anthropic.com/v1/models",
-            headers={"x-api-key": settings.llm.anthropic_api_key, "anthropic-version": "2023-06-01"},
+            headers={
+                "x-api-key": settings.llm.anthropic_api_key,
+                "anthropic-version": "2023-06-01",
+            },
             timeout=10.0,
         )
         response.raise_for_status()

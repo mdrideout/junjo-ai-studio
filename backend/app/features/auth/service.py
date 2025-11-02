@@ -4,7 +4,6 @@ Authentication service layer.
 Contains business logic for authentication operations.
 """
 
-
 from app.common.audit import AuditAction, AuditResource, audit_log
 from app.db_sqlite.users.repository import UserRepository
 from app.db_sqlite.users.schemas import UserRead
@@ -49,12 +48,13 @@ class AuthService:
         # Use atomic method that checks and creates in a single transaction
         # This prevents race conditions when multiple requests try to create first user
         return await UserRepository.create_first_user_atomic(
-            email=email,
-            password_hash=hashed_password
+            email=email, password_hash=hashed_password
         )
 
     @staticmethod
-    async def create_user(email: str, password: str, authenticated_user: AuthenticatedUser) -> UserRead:
+    async def create_user(
+        email: str, password: str, authenticated_user: AuthenticatedUser
+    ) -> UserRead:
         """
         Create a new user.
 
@@ -71,18 +71,12 @@ class AuthService:
         """
         # Audit log at service layer (defense in depth)
         audit_log(
-            AuditAction.CREATE,
-            AuditResource.USER,
-            None,
-            authenticated_user,
-            {"email": email}
+            AuditAction.CREATE, AuditResource.USER, None, authenticated_user, {"email": email}
         )
 
         hashed_password = hash_password(password)
         return await UserRepository.create(
-            email=email,
-            password_hash=hashed_password,
-            authenticated_user=authenticated_user
+            email=email, password_hash=hashed_password, authenticated_user=authenticated_user
         )
 
     @staticmethod

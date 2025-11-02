@@ -114,10 +114,7 @@ async def span_ingestion_poller() -> None:
                         resource.ParseFromString(spans_with_resources[0].resource_bytes)
 
                         for attr in resource.attributes:
-                            if (
-                                attr.key == "service.name"
-                                and attr.value.HasField("string_value")
-                            ):
+                            if attr.key == "service.name" and attr.value.HasField("string_value"):
                                 service_name = attr.value.string_value
                                 break
 

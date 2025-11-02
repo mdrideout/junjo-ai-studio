@@ -23,9 +23,7 @@ class UserRepository:
 
     @staticmethod
     async def create(
-        email: str,
-        password_hash: str,
-        authenticated_user: AuthenticatedUser = SYSTEM_USER
+        email: str, password_hash: str, authenticated_user: AuthenticatedUser = SYSTEM_USER
     ) -> UserRead:
         """Create a new user.
 
@@ -53,14 +51,11 @@ class UserRepository:
             AuditResource.USER,
             None,  # ID not yet known
             authenticated_user,
-            {"email": email}
+            {"email": email},
         )
 
         try:
-            db_obj = UserTable(
-                email=email,
-                password_hash=password_hash
-            )
+            db_obj = UserTable(email=email, password_hash=password_hash)
 
             async with db_config.async_session() as session:
                 session.add(db_obj)
@@ -185,7 +180,7 @@ class UserRepository:
             AuditResource.USER,
             None,
             SYSTEM_USER,
-            {"email": email, "first_user": True}
+            {"email": email, "first_user": True},
         )
 
         try:
@@ -203,10 +198,7 @@ class UserRepository:
                     raise ValueError("Users already exist, cannot create first user")
 
                 # Create first user (still holding lock)
-                db_obj = UserTable(
-                    email=email,
-                    password_hash=password_hash
-                )
+                db_obj = UserTable(email=email, password_hash=password_hash)
                 session.add(db_obj)
                 await session.commit()
                 await session.refresh(db_obj)

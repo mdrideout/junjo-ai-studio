@@ -8,7 +8,6 @@ add unnecessary overhead for write operations. We use raw SQL for inserts
 and can use SQLAlchemy for reads if needed in the future.
 """
 
-
 from pydantic import BaseModel, ConfigDict
 
 

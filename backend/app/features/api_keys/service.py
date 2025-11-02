@@ -64,15 +64,12 @@ class APIKeyService:
             AuditResource.API_KEY,
             key_id,
             authenticated_user,
-            {"name": name, "key_preview": key_value[:8] + "..."}
+            {"name": name, "key_preview": key_value[:8] + "..."},
         )
 
         # Save to database
         return await APIKeyRepository.create(
-            id=key_id,
-            key=key_value,
-            name=name,
-            authenticated_user=authenticated_user
+            id=key_id, key=key_value, name=name, authenticated_user=authenticated_user
         )
 
     @staticmethod

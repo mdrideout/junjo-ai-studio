@@ -72,7 +72,9 @@ class LLMService:
             return {"type": "json_object"}
 
     @staticmethod
-    async def generate(request: GenerateRequest, authenticated_user: AuthenticatedUser) -> GenerateResponse:
+    async def generate(
+        request: GenerateRequest, authenticated_user: AuthenticatedUser
+    ) -> GenerateResponse:
         """
         Generate LLM completion using LiteLLM.
 
@@ -97,7 +99,7 @@ class LLMService:
             AuditResource.LLM_GENERATION,
             None,
             authenticated_user,
-            {"model": request.model, "message_count": len(request.messages)}
+            {"model": request.model, "message_count": len(request.messages)},
         )
 
         try:
@@ -106,7 +108,9 @@ class LLMService:
             # Prepare LiteLLM kwargs with explicit type annotation
             kwargs: dict[str, Any] = {
                 "model": request.model,
-                "messages": [{"role": msg.role, "content": msg.content} for msg in request.messages],
+                "messages": [
+                    {"role": msg.role, "content": msg.content} for msg in request.messages
+                ],
             }
 
             # Add optional common parameters
@@ -128,7 +132,9 @@ class LLMService:
                 kwargs["max_completion_tokens"] = request.max_completion_tokens
 
             # Response format (JSON mode / structured output)
-            response_format = LLMService._prepare_response_format(request.json_mode, request.json_schema)
+            response_format = LLMService._prepare_response_format(
+                request.json_mode, request.json_schema
+            )
             if response_format:
                 kwargs["response_format"] = response_format
 
@@ -148,7 +154,11 @@ class LLMService:
                 reasoning_content = message.reasoning_content
 
             # Anthropic extended thinking: thinking_blocks field on message
-            elif hasattr(message, "thinking_blocks") and message.thinking_blocks and len(message.thinking_blocks) > 0:
+            elif (
+                hasattr(message, "thinking_blocks")
+                and message.thinking_blocks
+                and len(message.thinking_blocks) > 0
+            ):
                 # thinking_blocks is a list of dicts with "thinking" field
                 thinking_parts = [
                     block.get("thinking", "")
