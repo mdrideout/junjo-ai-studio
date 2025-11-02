@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --locked
+          uv sync --all-extras --locked
 
       - name: Run linting (ruff)
         working-directory: backend
@@ -92,7 +92,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --locked
+          uv sync --all-extras --locked
 
       - name: Run ruff check
         working-directory: backend
