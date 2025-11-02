@@ -34,18 +34,24 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Install protoc
-          sudo apt-get update && sudo apt-get install -y protobuf-compiler
+          # Install protoc v30.2 (locked version for consistency)
+          PROTOC_VERSION=30.2
+          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+          sudo unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local bin/protoc
+          sudo unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local 'include/*'
+          rm protoc-${PROTOC_VERSION}-linux-x86_64.zip
 
-          # Install Go plugins
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          # Install Go plugins with locked versions to prevent drift
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
           # Install Python tools
-          pip install grpcio-tools
+          pip install grpcio-tools==1.76.0
 
           # Verify installation
           protoc --version
+          protoc-gen-go --version
+          protoc-gen-go-grpc --version
 
       - name: Regenerate Go proto files
         run: |

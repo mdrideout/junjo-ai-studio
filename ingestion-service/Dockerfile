@@ -10,11 +10,10 @@ RUN apk add --no-cache tini
 RUN go install github.com/air-verse/air@latest
 
 # Install grpc_health_probe for health checks
-RUN apk add --no-cache curl && \
+RUN apk add --no-cache curl unzip && \
     GRPC_HEALTH_PROBE_VERSION=v0.4.24 && \
     curl -sL https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 -o /usr/local/bin/grpc_health_probe && \
-    chmod +x /usr/local/bin/grpc_health_probe && \
-    apk del curl
+    chmod +x /usr/local/bin/grpc_health_probe
 
 # Copy shared proto files
 COPY proto/ ../proto/
@@ -26,10 +25,14 @@ RUN go mod download
 # Copy the rest of the application source code
 COPY ingestion-service/ .
 
-# Install protoc and Go protobuf plugins for proto generation
-RUN apk add --no-cache protobuf protobuf-dev && \
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+# Install protoc v30.2 and Go protobuf plugins with locked versions
+RUN PROTOC_VERSION=30.2 && \
+    curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
+    unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local bin/protoc && \
+    unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local 'include/*' && \
+    rm protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10 && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
 # Generate proto files from shared proto directory
 RUN protoc \
@@ -52,6 +55,9 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
+# Install curl and unzip for downloading protoc
+RUN apk add --no-cache curl unzip
+
 # Copy shared proto files
 COPY proto/ ../proto/
 
@@ -62,10 +68,14 @@ RUN go mod download
 # Copy the rest of the application source code
 COPY ingestion-service/ .
 
-# Install protoc and Go protobuf plugins for proto generation
-RUN apk add --no-cache protobuf protobuf-dev && \
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+# Install protoc v30.2 and Go protobuf plugins with locked versions
+RUN PROTOC_VERSION=30.2 && \
+    curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
+    unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local bin/protoc && \
+    unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local 'include/*' && \
+    rm protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10 && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
 # Generate proto files from shared proto directory (defense in depth)
 # This ensures Docker images always have fresh proto files even if pre-commit hook was skipped
