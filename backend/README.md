@@ -204,11 +204,31 @@ uv run pytest -v
 
 ### GitHub Actions CI
 
-Tests run automatically on pull requests:
-- **Unit tests**: Fast execution with no external dependencies
-- **Integration tests**: Run with Docker Compose and GitHub Secrets for API keys
+Tests run automatically on pull requests and pushes to main/master branches.
 
-See [`.github/workflows/test.yml`](../.github/workflows/test.yml) for CI configuration.
+**Workflow**: [`.github/workflows/backend-tests.yml`](../.github/workflows/backend-tests.yml)
+
+**What runs in CI**:
+- **Linting**: ruff check and format validation
+- **Unit tests**: Fast execution with no external dependencies
+- **Integration tests**: Full test suite with temporary databases
+- **gRPC tests**: Backend server integration tests
+
+**Environment Configuration**:
+
+CI uses hardcoded test values for security settings (these protect only ephemeral test data):
+```yaml
+JUNJO_SESSION_SECRET: "tHYEOeDANnwNydQHmitFdkBYbuIrY68Xo1aPZ6WCPVI="
+JUNJO_SECURE_COOKIE_KEY: "2AorEiMD7P/kiosXFgLvahxdABNVYMUzWHPghTweskk="  # Base64-encoded 32 bytes
+```
+
+LLM API keys are stored as GitHub Secrets (optional - tests skip if not present):
+- `OPENAI_API_KEY` - For OpenAI integration tests
+- `ANTHROPIC_API_KEY` - For Anthropic integration tests
+- `GEMINI_API_KEY` - For Gemini integration tests
+
+**For Repository Maintainers**: To enable LLM integration tests in CI, add these secrets in:
+`Settings → Secrets and variables → Actions → New repository secret`
 
 ---
 

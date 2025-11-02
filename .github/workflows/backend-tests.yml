@@ -56,6 +56,10 @@ jobs:
         env:
           # Ensure clean test environment
           PYTHONUNBUFFERED: "1"
+          # Required security settings for test environment
+          # These are test-only values, not production secrets
+          JUNJO_SESSION_SECRET: "tHYEOeDANnwNydQHmitFdkBYbuIrY68Xo1aPZ6WCPVI="
+          JUNJO_SECURE_COOKIE_KEY: "2AorEiMD7P/kiosXFgLvahxdABNVYMUzWHPghTweskk="
           # API keys for integration tests (optional - tests may skip if not set)
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
