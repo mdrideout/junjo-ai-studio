@@ -1,3 +1,23 @@
+# Junjo Server - Universal Docker Compose Configuration
+#
+# This single compose file works for both development and production by using
+# the JUNJO_BUILD_TARGET environment variable to control build stages.
+#
+# DEVELOPMENT MODE (with hot-reloading):
+#   Set in .env: JUNJO_BUILD_TARGET=development
+#   - Backend: uvicorn --reload watches Python files
+#   - Ingestion: Air watches Go files
+#   - Frontend: Vite HMR watches React/TypeScript files
+#
+# PRODUCTION MODE (optimized builds):
+#   Set in .env: JUNJO_BUILD_TARGET=production
+#   - Backend: Production uvicorn without reload
+#   - Ingestion: Compiled Go binary
+#   - Frontend: Static files served by nginx
+#
+# Source code volumes are always mounted but only used in development mode.
+# In production mode, the compiled/optimized code inside the container is used.
+
 services:
   junjo-server-backend:
     container_name: junjo-server-backend
@@ -5,8 +25,12 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      target: ${JUNJO_BUILD_TARGET:-production}
     volumes:
-      - ./.dbdata:/app/.dbdata
+      # Database storage (required for all modes)
+      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
+      # Source code (enables hot-reload in development mode via uvicorn --reload)
+      - ./backend/app:/app/app
     ports:
       - "1323:1323"
     networks:
@@ -20,12 +44,6 @@ services:
       # Enable migrations on startup
       - RUN_MIGRATIONS=true
       # DB paths inherited from .env (DB_SQLITE_PATH, DB_DUCKDB_PATH)
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:1323/ping')"]
-      interval: 5s
-      timeout: 3s
-      retries: 25
-      start_period: 5s
 
   junjo-server-ingestion:
     container_name: junjo-server-ingestion
@@ -35,8 +53,10 @@ services:
       dockerfile: ingestion-service/Dockerfile
       target: ${JUNJO_BUILD_TARGET:-production}
     volumes:
+      # Source code (enables hot-reload in development mode via Air)
       - ./ingestion-service:/app
-      - ./.dbdata:/app/.dbdata
+      # Database storage (required for all modes)
+      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
     ports:
       - "50051:50051"
       - "50052:50052"
@@ -49,7 +69,7 @@ services:
       - BACKEND_GRPC_PORT=50053
     depends_on:
       junjo-server-backend:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50052"]
       interval: 5s
@@ -65,7 +85,9 @@ services:
       dockerfile: frontend/Dockerfile
       target: ${JUNJO_BUILD_TARGET:-production}
     volumes:
+      # Preserve node_modules (performance optimization for development)
       - frontend-modules:/app/node_modules
+      # Source code (enables hot-reload in development mode via Vite HMR)
       - ./frontend:/app
     ports:
       - "5151:5151"
@@ -75,9 +97,7 @@ services:
       - .env
     depends_on:
       junjo-server-backend:
-        condition: service_healthy
-      junjo-server-ingestion:
-        condition: service_healthy
+        condition: service_started
 
 volumes:
   frontend-modules:

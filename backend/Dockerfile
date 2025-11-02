@@ -1,13 +1,13 @@
 # Stage 1: Base - Install dependencies using uv
-FROM python:3.13-alpine AS base
+FROM python:3.13-slim-trixie AS base
 
-# Install build dependencies
-RUN apk add --no-cache \
-    git \
+# Install build dependencies using apt-get
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     gcc \
     g++ \
-    musl-dev \
-    libffi-dev
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -26,10 +26,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-dev
 
 # Stage 2: Production - Final image
-FROM python:3.13-alpine AS production
+FROM python:3.13-slim-trixie AS production
 
-# Install tini for proper signal handling and libstdc++ for greenlet
-RUN apk add --no-cache tini libstdc++
+# Install tini and libstdc++6 using apt-get
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    tini \
+    libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -68,21 +72,14 @@ RUN mkdir -p ./dbdata
 EXPOSE 1323
 EXPOSE 50053
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:1323/ping')"
-
 # Use tini with entrypoint script for proper signal handling and migrations
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
 
 # Run uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "1323"]
 
 # Stage 3: Development - Add dev dependencies and hot reload
-FROM production AS dev
-
-# Install development dependencies using pip (uv not available in production stage)
-RUN pip install watchfiles
+FROM production AS development
 
 # Override CMD for hot reload
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "1323", "--reload"]

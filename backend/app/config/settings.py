@@ -10,7 +10,7 @@ Pattern validated for high-concurrency asyncio environments.
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import Field, computed_field, field_validator
+from pydantic import AliasChoices, Field, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -334,11 +334,14 @@ class AppSettings(BaseSettings):
     ]
 
     # CORS
+    # Note: Type is str | list[str] to prevent Pydantic Settings from trying
+    # to JSON-parse the env var. The validator converts comma-separated strings to list.
     cors_origins: Annotated[
-        list[str],
+        str | list[str],
         Field(
             default=["http://localhost:5151"],
-            description="Allowed CORS origins"
+            description="Allowed CORS origins (comma-separated string or list)",
+            validation_alias=AliasChoices('junjo_allow_origins', 'cors_origins')
         )
     ]
 

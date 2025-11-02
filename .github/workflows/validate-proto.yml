@@ -20,30 +20,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install protoc
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler
-          protoc --version
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-
-      - name: Install Go protobuf plugins
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
+          cache-dependency-path: ingestion-service/go.sum
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+          cache: 'pip'
 
-      - name: Install Python protobuf tools
-        run: pip install grpcio-tools
+      - name: Install dependencies
+        run: |
+          # Install protoc
+          sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+          # Install Go plugins
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+          # Install Python tools
+          pip install grpcio-tools
+
+          # Verify installation
+          protoc --version
 
       - name: Regenerate Go proto files
         run: |

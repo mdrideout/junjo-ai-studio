@@ -245,7 +245,11 @@ PORT=1323                    # Backend HTTP port
 INGESTION_PORT=50051        # OTLP ingestion gRPC port (public)
 GRPC_PORT=50053             # Backend internal gRPC port
 
-# === Database Paths ================================================
+# === Database Storage ==============================================
+# Host storage location (where database files are stored on host machine)
+HOST_DB_DATA_PATH=./.dbdata
+
+# Container paths (where apps look for databases inside containers)
 DB_SQLITE_PATH=/dbdata/sqlite/junjo.db
 DB_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
 BADGERDB_PATH=/dbdata/badgerdb
@@ -261,6 +265,86 @@ GEMINI_API_KEY=...
 ```
 
 **See `.env.example` for complete configuration with detailed comments.**
+
+### Database Storage Configuration
+
+Junjo Server uses a **two-layer system** for database storage that separates host machine paths from container paths:
+
+#### Understanding the Two Layers
+
+1. **`HOST_DB_DATA_PATH`** - Where files are stored on your **host machine**
+2. **`DB_*_PATH` variables** - Where applications look **inside Docker containers**
+
+Docker mounts `HOST_DB_DATA_PATH` from your host to `/app/.dbdata` inside containers, making database files accessible to all services.
+
+#### Development Setup
+
+For local development, use a relative path:
+
+```bash
+# .env file
+HOST_DB_DATA_PATH=./.dbdata
+JUNJO_BUILD_TARGET=development
+```
+
+This stores databases in `./.dbdata` directory next to your `docker-compose.yml`. Docker creates this directory automatically.
+
+**Benefits:**
+- Easy to reset by deleting the directory
+- No special setup required
+- Works out of the box
+
+#### Production Setup with Block Storage
+
+For production deployments with persistent storage (DigitalOcean Volumes, AWS EBS, Google Persistent Disk):
+
+**1. Mount your block storage:**
+```bash
+# DigitalOcean Droplet example
+sudo mount /dev/disk/by-id/scsi-0DO_Volume_junjo /mnt/junjo-data
+
+# AWS EC2 example
+sudo mount /dev/xvdf /mnt/junjo-data
+
+# Google Cloud example
+sudo mount /dev/disk/by-id/google-junjo-data /mnt/junjo-data
+```
+
+**2. Update your `.env` file:**
+```bash
+HOST_DB_DATA_PATH=/mnt/junjo-data
+JUNJO_BUILD_TARGET=production
+```
+
+**3. Start services:**
+```bash
+docker compose up -d
+```
+
+**Benefits:**
+- Data persists across container restarts
+- Data survives even if you delete and recreate containers
+- Easy to backup by snapshotting the volume
+- Can detach and reattach to different instances
+
+#### Important Notes
+
+- **Container paths** (`DB_SQLITE_PATH`, `DB_DUCKDB_PATH`, `BADGERDB_PATH`) should **not be changed** unless you modify the Dockerfiles
+- The `HOST_DB_DATA_PATH` variable works in `docker-compose.yml` through variable substitution: `${HOST_DB_DATA_PATH:-./.dbdata}`
+- If `HOST_DB_DATA_PATH` is not set, it defaults to `./.dbdata`
+- All three services (backend, ingestion, frontend) share the same storage location
+
+#### Database Types
+
+Junjo Server uses three embedded databases:
+
+| Database | Purpose | Type |
+|----------|---------|------|
+| **SQLite** | User data, API keys, sessions | Single file |
+| **DuckDB** | Analytics queries on telemetry | Single file |
+| **BadgerDB** | Ingestion WAL (Write-Ahead Log) | Directory with multiple files |
+
+All are stored under `HOST_DB_DATA_PATH` on your host machine.
 
 ### Creating API Keys
 

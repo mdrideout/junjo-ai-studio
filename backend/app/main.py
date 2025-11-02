@@ -12,8 +12,8 @@ Pattern from wt_api_v2 (validated for production use).
 """
 
 import asyncio
-from contextlib import asynccontextmanager
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,7 +29,6 @@ from app.features.auth.router import router as auth_router
 from app.features.llm_playground.router import router as llm_playground_router
 from app.features.otel_spans.router import router as otel_spans_router
 from app.grpc_server import start_grpc_server_background, stop_grpc_server
-
 
 # Set up logging before anything else
 setup_logging()
@@ -70,6 +69,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize DuckDB tables
     from app.db_duckdb.db_config import initialize_tables
+
     initialize_tables()
     logger.info("DuckDB tables initialized")
 
@@ -107,6 +107,7 @@ async def lifespan(app: FastAPI):
 
     # Start span ingestion poller as background task
     from app.features.span_ingestion.background_poller import span_ingestion_poller
+
     poller_task = asyncio.create_task(span_ingestion_poller())
     logger.info("Span ingestion poller task created")
 
@@ -196,23 +197,10 @@ app.add_middleware(
 app.include_router(auth_router, tags=["auth"])
 app.include_router(api_keys_router)
 app.include_router(llm_playground_router, prefix="/llm", tags=["llm"])
-app.include_router(
-    otel_spans_router, prefix="/api/v1/observability", tags=["observability"]
-)
+app.include_router(otel_spans_router, prefix="/api/v1/observability", tags=["observability"])
 
 
 # Health check endpoints
-@app.get("/ping", response_model=str, tags=["Health"])
-async def ping() -> str:
-    """Simple ping endpoint.
-
-    Returns:
-        String "pong" to confirm server is responding.
-    """
-    logger.debug("Ping endpoint called")
-    return "pong"
-
-
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health() -> HealthResponse:
     """Detailed health check endpoint.

@@ -14,4 +14,4 @@ fi
 
 # Execute the command passed to the script
 echo "Executing command: $@"
-exec -- "$@"
+exec "$@"
