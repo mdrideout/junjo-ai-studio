@@ -115,6 +115,37 @@ uv run python -m grpc_tools.protoc --version
 # Expected: libprotoc 30.2 (bundled with grpcio-tools)
 ```
 
+### Quick Validation Script
+
+Run this one-liner to check all versions at once:
+
+```bash
+echo "protoc: $(protoc --version 2>&1 | awk '{print $2}')" && \
+echo "protoc-gen-go: $(protoc-gen-go --version 2>&1 | awk '{print $2}')" && \
+echo "protoc-gen-go-grpc: $(protoc-gen-go-grpc --version 2>&1 | awk '{print $2}')"
+```
+
+Expected output:
+```
+protoc: 30.2
+protoc-gen-go: v1.36.10
+protoc-gen-go-grpc: 1.5.1
+```
+
+### Pre-commit Hook Validation
+
+The pre-commit hook (`scripts/pre-commit.sh`) **automatically checks versions** before generating proto files. If version mismatches are detected, you'll see warnings like:
+
+```
+⚠️  Warning: protoc version mismatch
+     Expected: v30.2
+     Found:    v29.3
+
+📚 To install correct versions, see: PROTO_VERSIONS.md
+```
+
+**Note**: The hook will continue with generation even if versions don't match (to avoid blocking commits), but **you should update your tools** to ensure consistency with CI/CD and other developers.
+
 ## Regenerating Proto Files
 
 ### Go (ingestion-service)
@@ -154,6 +185,35 @@ The validate-proto workflow ensures proto files are never out of sync by:
 3. Failing the build if any differences are detected
 
 ## Troubleshooting
+
+### Pre-commit hook shows version warnings
+**Symptom**: You see warnings during commit about version mismatches
+
+**Solution**:
+1. Check your current versions:
+   ```bash
+   protoc --version
+   protoc-gen-go --version
+   protoc-gen-go-grpc --version
+   ```
+
+2. If using Homebrew's protoc, **remove it**:
+   ```bash
+   brew uninstall protobuf
+   ```
+
+3. Install the correct versions following the [Installation Instructions](#installation-instructions) above
+
+4. Verify your shell uses the correct protoc:
+   ```bash
+   which protoc  # Should show ~/.local/bin/protoc or similar, NOT /usr/local/bin or /opt/homebrew/bin
+   ```
+
+5. If PATH is incorrect, ensure `~/.local/bin` comes first:
+   ```bash
+   export PATH="$HOME/.local/bin:$PATH"
+   # Add to ~/.zshrc or ~/.bashrc to make permanent
+   ```
 
 ### "protoc: command not found"
 - Ensure protoc is in your PATH
