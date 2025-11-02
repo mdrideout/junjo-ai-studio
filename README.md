@@ -419,16 +419,17 @@ services:
     container_name: junjo-server-backend
     restart: unless-stopped
     volumes:
-      - ./.dbdata/sqlite:/dbdata/sqlite
-      - ./.dbdata/duckdb:/dbdata/duckdb
+      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
     ports:
-      - "1323:1323"   # API server
-      - "50053:50053" # Internal gRPC
+      - "1323:1323"   # HTTP API (public)
+      # Port 50053 (internal gRPC for API key validation) is NOT exposed - only accessible via Docker network
     networks:
       - junjo-network
     env_file:
       - .env
-    user: root
+    environment:
+      - INGESTION_HOST=junjo-server-ingestion
+      - INGESTION_PORT=50052
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1323/ping"]
       interval: 5s
@@ -441,14 +442,20 @@ services:
     container_name: junjo-server-ingestion
     restart: unless-stopped
     volumes:
-      - ./.dbdata/badgerdb:/dbdata/badgerdb
+      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
     ports:
-      - "50051:50051"  # OTLP ingestion (public)
-      - "50052:50052"  # Internal gRPC
+      - "50051:50051"  # Public OTLP endpoint (authenticated via API key)
+      # Port 50052 (internal gRPC for span reading) is NOT exposed - only accessible via Docker network
     networks:
       - junjo-network
     env_file:
       - .env
+    environment:
+      - BACKEND_GRPC_HOST=junjo-server-backend
+      - BACKEND_GRPC_PORT=50053
+    depends_on:
+      junjo-server-backend:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50052"]
       interval: 5s

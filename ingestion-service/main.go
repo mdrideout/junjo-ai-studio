@@ -31,8 +31,8 @@ func main() {
 		dbPath = filepath.Join(homeDir, ".junjo", "ingestion-wal")
 	}
 
-	// Ensure the directory exists
-	if err := os.MkdirAll(dbPath, 0755); err != nil {
+	// Ensure the directory exists (0700 = owner-only access)
+	if err := os.MkdirAll(dbPath, 0700); err != nil {
 		log.Error("failed to create database directory", slog.String("path", dbPath), slog.Any("error", err))
 		os.Exit(1)
 	}

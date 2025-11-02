@@ -78,7 +78,9 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir -p ./dbdata
 
 # Expose ports
+# HTTP API (public - mapped to host in docker-compose.yml)
 EXPOSE 1323
+# Internal gRPC for API key validation (NOT mapped to host - internal Docker network only)
 EXPOSE 50053
 
 # Use tini with entrypoint script for proper signal handling and migrations

@@ -41,8 +41,11 @@ RUN protoc \
     --go-grpc_out=./proto_gen \
     ../proto/*.proto
 
-# Expose the gRPC port
+# Expose ports
+# Public OTLP endpoint (authenticated via API key - mapped to host)
 EXPOSE 50051
+# Internal gRPC for span reading (NOT mapped to host - internal Docker network only)
+EXPOSE 50052
 
 # Use tini as the entrypoint to ensure signals are forwarded to air
 ENTRYPOINT ["/sbin/tini", "--"]
@@ -103,8 +106,11 @@ RUN apk add --no-cache tini curl && \
 # Copy the binary from the builder stage
 COPY --from=builder /ingestion-service /ingestion-service
 
-# Expose the gRPC port
+# Expose ports
+# Public OTLP endpoint (authenticated via API key - mapped to host)
 EXPOSE 50051
+# Internal gRPC for span reading (NOT mapped to host - internal Docker network only)
+EXPOSE 50052
 
 # Use tini as the entrypoint to ensure signals are forwarded correctly
 ENTRYPOINT ["/sbin/tini", "--"]

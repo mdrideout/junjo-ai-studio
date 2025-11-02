@@ -15,10 +15,10 @@ import (
 
 // ApiKeyAuthInterceptor is a gRPC interceptor that validates static API keys.
 func ApiKeyAuthInterceptor(authClient *backend_client.AuthClient) grpc.UnaryServerInterceptor {
-	// Initialize a new cache with a capacity of 10,000 keys and a 1-hour TTL.
+	// Initialize a new cache with a capacity of 10,000 keys and a 10-minute TTL.
 	cache := otter.Must(&otter.Options[string, bool]{
 		MaximumSize:      10_000,
-		ExpiryCalculator: otter.ExpiryWriting[string, bool](time.Hour),
+		ExpiryCalculator: otter.ExpiryWriting[string, bool](10 * time.Minute),
 	})
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
