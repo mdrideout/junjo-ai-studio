@@ -26,6 +26,18 @@ RUN go mod download
 # Copy the rest of the application source code
 COPY ingestion-service/ .
 
+# Install protoc and Go protobuf plugins for proto generation
+RUN apk add --no-cache protobuf protobuf-dev && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Generate proto files from shared proto directory
+RUN protoc \
+    -I../proto \
+    --go_out=./proto_gen \
+    --go-grpc_out=./proto_gen \
+    ../proto/*.proto
+
 # Expose the gRPC port
 EXPOSE 50051
 
@@ -49,6 +61,19 @@ RUN go mod download
 
 # Copy the rest of the application source code
 COPY ingestion-service/ .
+
+# Install protoc and Go protobuf plugins for proto generation
+RUN apk add --no-cache protobuf protobuf-dev && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Generate proto files from shared proto directory (defense in depth)
+# This ensures Docker images always have fresh proto files even if pre-commit hook was skipped
+RUN protoc \
+    -I../proto \
+    --go_out=./proto_gen \
+    --go-grpc_out=./proto_gen \
+    ../proto/*.proto
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o /ingestion-service

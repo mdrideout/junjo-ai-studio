@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: proto/ingestion.proto
+// source: ingestion.proto
 
 package proto_gen
 
@@ -131,5 +131,5 @@ var InternalIngestionService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/ingestion.proto",
+	Metadata: "ingestion.proto",
 }

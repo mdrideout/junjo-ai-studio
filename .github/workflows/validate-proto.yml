@@ -1,0 +1,81 @@
+# This workflow validates that proto files are up-to-date in the repository.
+# It regenerates proto files and fails if any changes are detected.
+# This ensures developers cannot push stale proto code.
+
+name: Validate Proto Files
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - oct-2025-improvements
+
+jobs:
+  validate-proto:
+    name: Validate Proto Files Are Up-to-Date
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          protoc --version
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install Go protobuf plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Python protobuf tools
+        run: pip install grpcio-tools
+
+      - name: Regenerate Go proto files
+        run: |
+          cd ingestion-service
+          make proto
+          cd ..
+
+      - name: Regenerate Python proto files
+        run: |
+          cd backend
+          ./scripts/generate_proto.sh
+          cd ..
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --quiet; then
+            echo "❌ ERROR: Proto files are out of date!"
+            echo ""
+            echo "The following files have uncommitted changes:"
+            git diff --name-only
+            echo ""
+            echo "📋 Full diff:"
+            git diff
+            echo ""
+            echo "🔧 To fix this issue:"
+            echo "  1. Run: ./scripts/install-git-hooks.sh (to install pre-commit hooks)"
+            echo "  2. Or regenerate manually:"
+            echo "     cd ingestion-service && make proto"
+            echo "     cd ../backend && ./scripts/generate_proto.sh"
+            echo "  3. Commit the updated proto files"
+            echo ""
+            exit 1
+          fi
+          echo "✅ Proto files are up-to-date"

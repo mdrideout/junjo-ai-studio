@@ -786,6 +786,156 @@ Currently, the playground endpoints (`/llm/{provider}/generate`) do NOT emit Ope
 
 This will allow playground usage to be captured and analyzed like production LLM calls.
 
+## 7. Proto File Generation & Build Process
+
+Junjo Server uses Protocol Buffers for internal gRPC communication between services. The proto files define the API contracts for authentication and span ingestion between `backend` and `ingestion-service`.
+
+### Proto File Locations
+
+**Source Proto Files** (`proto/` directory at repository root):
+- `proto/auth.proto` - Internal authentication service for API key validation
+- `proto/ingestion.proto` - Internal ingestion service for reading spans from WAL
+
+**Generated Proto Files**:
+- **Backend (Python)**: `backend/app/proto_gen/`
+  - `auth_pb2.py`, `auth_pb2_grpc.py`
+  - `ingestion_pb2.py`, `ingestion_pb2_grpc.py`
+  - `__init__.py`
+- **Ingestion Service (Go)**: `ingestion-service/proto_gen/`
+  - `auth.pb.go`, `auth_grpc.pb.go`
+  - `ingestion.pb.go`, `ingestion_grpc.pb.go`
+
+### Defense in Depth Strategy
+
+Proto files are generated using a **multi-layered approach** to ensure they are always fresh:
+
+1. **Pre-commit Hooks** - Auto-generate and stage proto files before each commit (local convenience)
+2. **GitHub Actions Validation** - Validates proto files on CI, fails build if stale (enforcement - cannot be bypassed)
+3. **Docker Build Generation** - Regenerate during Docker image build (production safety)
+4. **Git Commit** - Proto files are committed to enable local testing without protoc
+
+This approach provides **four layers of protection** against stale proto code in production, with GitHub Actions providing true enforcement that pre-commit hooks alone cannot provide.
+
+### Generation Methods
+
+#### Manual Generation (Development)
+
+**Go (ingestion-service)**:
+```bash
+cd ingestion-service
+make proto
+```
+
+**Python (backend)**:
+```bash
+cd backend
+./scripts/generate_proto.sh
+```
+
+#### Automatic Generation (Pre-commit Hook)
+
+The pre-commit hook automatically regenerates proto files before each commit:
+
+**Install hook**:
+```bash
+./scripts/install-git-hooks.sh
+```
+
+**What it does**:
+- Runs `make proto` for ingestion-service
+- Runs `generate_proto.sh` for backend
+- Stages any modified proto files automatically
+- Prevents commits with stale proto code
+
+**Hook script**: `scripts/pre-commit.sh`
+
+#### Docker Build Generation
+
+Both services regenerate proto files during Docker builds as a safety mechanism:
+
+**Ingestion Service** (`ingestion-service/Dockerfile`):
+```dockerfile
+# Install protoc and Go plugins
+RUN apk add --no-cache protobuf protobuf-dev && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Generate proto files
+RUN protoc \
+    -I../proto \
+    --go_out=./proto_gen \
+    --go-grpc_out=./proto_gen \
+    ../proto/*.proto
+```
+
+**Backend** (`backend/Dockerfile`):
+```dockerfile
+# Generate proto files using unified script
+RUN chmod +x /tmp/generate_proto.sh && \
+    /tmp/generate_proto.sh /app/app/proto_gen /app/../proto
+```
+
+#### GitHub Actions Validation (CI Enforcement)
+
+A GitHub Actions workflow validates proto files on every push and pull request:
+
+**Workflow**: `.github/workflows/validate-proto.yml`
+
+**What it does**:
+1. Installs protoc and all required plugins
+2. Regenerates proto files from scratch
+3. Runs `git diff` to check for changes
+4. **Fails the build** if proto files are out of date
+5. Provides clear instructions for fixing the issue
+
+**When it runs**:
+- On every pull request
+- On pushes to main/master branches
+- Can be made a required status check for PR merging
+
+**Why this matters**:
+- Pre-commit hooks can be bypassed with `git commit --no-verify`
+- GitHub Actions provides **true enforcement** that cannot be bypassed
+- Catches stale proto files before they reach the main branch
+- Works for all contributors without local setup
+
+This provides an additional layer of defense that pre-commit hooks alone cannot provide.
+
+### Why Proto Files Are Committed
+
+Proto files are committed to git (not ignored) for these reasons:
+
+1. **Local Testing** - Developers can test immediately without installing protoc
+2. **Integration Tests** - CI/CD can run tests without proto generation step
+3. **Consistency** - Matches pattern used in Junjo client SDK
+4. **Pre-commit Safety** - Hook ensures they stay fresh
+
+### Published Docker Images
+
+When Docker images are published via GitHub Actions:
+
+1. GitHub Actions checks out the repository
+2. Docker builds each service from its Dockerfile
+3. **Proto files are regenerated during Docker build** (defense in depth)
+4. Published images are guaranteed to have fresh proto code
+
+Even if the pre-commit hook somehow failed, Docker build generation ensures correctness.
+
+### Troubleshooting
+
+**Pre-commit hook fails**:
+- Check that `protoc` is installed: `protoc --version`
+- Check that Go plugins are installed: `which protoc-gen-go protoc-gen-go-grpc`
+- Install with: `go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest`
+
+**Python proto generation fails**:
+- Ensure `grpcio-tools` is installed: `pip install grpcio-tools` or `uv sync`
+- Check script exists: `backend/scripts/generate_proto.sh`
+
+**Proto import errors in code**:
+- Regenerate manually: `cd backend && ./scripts/generate_proto.sh`
+- Check files exist in `backend/app/proto_gen/` and `ingestion-service/proto_gen/`
+
 # Code Organization & Principles
 
 This section documents the code organization conventions and architectural principles for the Junjo Server codebase. These guidelines help maintain consistency, enable feature-based development, and make the codebase accessible to both LLM agents and human developers.
