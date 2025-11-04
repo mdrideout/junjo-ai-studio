@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: [],
+    setupFiles: ['./src/auth/test-utils/test-setup.ts'],
   },
   resolve: {
     alias: {

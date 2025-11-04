@@ -28,11 +28,26 @@ class UserRead(BaseModel):
         updated_at: Timestamp when user was last updated
     """
 
-    id: str
-    email: EmailStr
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    id: str = Field(
+        examples=["usr_2k4h6j8m9n0p1q2r"],
+        description="Unique user identifier",
+    )
+    email: EmailStr = Field(
+        examples=["alice@example.com"],
+        description="User email address",
+    )
+    is_active: bool = Field(
+        examples=[True],
+        description="Whether the user account is active",
+    )
+    created_at: datetime = Field(
+        examples=["2025-01-15T10:30:00Z"],
+        description="Timestamp when user was created",
+    )
+    updated_at: datetime = Field(
+        examples=["2025-01-15T10:30:00Z"],
+        description="Timestamp when user was last updated",
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
