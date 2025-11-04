@@ -3,10 +3,14 @@
  *
  * This file sets up request handlers to mock backend API responses during tests.
  * Individual tests can override these handlers using server.use() for specific scenarios.
+ *
+ * UPDATED: Now uses openapi-backend to generate mocks from OpenAPI spec,
+ * ensuring mocks stay in sync with backend schemas automatically.
  */
 
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { generateMock } from './openapi-mock-generator'
 
 // Base URL for API requests (matches development environment)
 const API_BASE = 'http://localhost:1323'
@@ -16,8 +20,11 @@ const API_BASE = 'http://localhost:1323'
  * Tests can override these using server.use() for custom scenarios.
  */
 export const handlers = [
-  // Mock /api_keys endpoint - returns empty array by default (no API keys)
+  // Mock /api_keys endpoint - auto-generated from OpenAPI spec
+  // Returns empty array by default, but tests can override to return generated mocks
   http.get(`${API_BASE}/api_keys`, () => {
+    // Default: empty array (no API keys)
+    // Tests can override with: generateMock('list_api_keys_api_keys_get')
     return HttpResponse.json([])
   }),
 

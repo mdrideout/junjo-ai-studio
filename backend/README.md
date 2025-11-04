@@ -101,13 +101,34 @@ curl http://localhost:1323/ping
 
 ## Testing
 
+### Test Script Organization
+
+**Backend-specific tests:**
+```bash
+# Run all backend tests (unit, integration, gRPC)
+./backend/scripts/run-backend-tests.sh
+
+# Run contract tests (schema validation)
+./backend/scripts/ci_validate_schemas.sh
+```
+
+**All project tests:**
+```bash
+# Run everything (backend, frontend, contract, proto validation)
+./run-all-tests.sh
+```
+
 ### Automated Test Script (Recommended)
 
 The easiest way to run all backend tests including gRPC integration tests:
 
 ```bash
 # From repository root
-./run-backend-tests.sh
+./backend/scripts/run-backend-tests.sh
+
+# Or from backend directory
+cd backend
+./scripts/run-backend-tests.sh
 ```
 
 This script automatically:
@@ -254,6 +275,79 @@ uv run ruff format app/
 uv run ruff check app/
 uv run pytest -m "not integration" -v
 ```
+
+---
+
+## API Schema Validation (Contract Testing)
+
+The backend uses **contract testing** to ensure frontend and backend schemas stay in sync.
+
+### How It Works
+
+1. **Backend Pydantic schemas** include `Field(examples=[...])` for realistic test data
+2. **OpenAPI schema** is auto-generated from Pydantic schemas
+3. **Frontend contract tests** validate Zod schemas can parse OpenAPI-generated mocks
+4. **Tests fail** if schemas drift (field added/removed/changed)
+
+### Running Schema Validation
+
+```bash
+# From backend directory
+./scripts/ci_validate_schemas.sh
+```
+
+This script:
+1. Exports OpenAPI schema from FastAPI (no server needed)
+2. Copies schema to frontend
+3. Runs frontend contract tests
+
+**GitHub Actions**: The schema validation workflow runs automatically on PRs that modify schema files.
+
+### Frontend Contract Tests
+
+Frontend tests use [openapi-backend](https://github.com/anttiviljami/openapi-backend) to generate mocks from the OpenAPI spec:
+
+```typescript
+// Generate mock from backend OpenAPI schema
+const { mock } = generateMock('list_users_users_get')
+
+// Try to parse with frontend Zod schema
+const result = ListUsersResponseSchema.parse(mock)
+// ✅ Pass = schemas match
+// ❌ Fail = schema drift detected
+```
+
+**Tests location**: `frontend/src/__tests__/contracts/`
+
+### What Gets Caught
+
+- ✅ Backend adds new required field → Test fails
+- ✅ Backend changes field type → Test fails
+- ✅ Frontend has wrong field name → Test fails
+- ✅ Field examples generate realistic data
+
+### Adding Examples to Schemas
+
+When creating new Pydantic response schemas, add `Field(examples=[...])`:
+
+```python
+class YourSchema(BaseModel):
+    id: str = Field(
+        examples=["your_prefix_abc123"],
+        description="Unique identifier"
+    )
+    name: str = Field(
+        examples=["Example Name"],
+        description="Human-readable name"
+    )
+```
+
+These examples:
+- Appear in the OpenAPI spec
+- Generate realistic test mocks
+- Improve API documentation
+
+**See**: `scripts/README_SCHEMA_VALIDATION.md` for detailed documentation.
 
 ---
 

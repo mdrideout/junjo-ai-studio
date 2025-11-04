@@ -33,6 +33,7 @@ _Junjo Server Frontend Screenshot_
 - [Configuration](#configuration)
 - [Production Deployment](#production-deployment)
 - [Advanced Topics](#advanced-topics)
+- [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 - [Resources](#resources)
 
@@ -534,6 +535,68 @@ duckdb ./.dbdata/duckdb/traces.duckdb
 - **Ingestion throughput**: Adjust `SPAN_BATCH_SIZE` and `SPAN_POLL_INTERVAL` in `.env`
 - **Database performance**: DuckDB and SQLite use WAL mode for better concurrency
 - **Container resources**: Increase memory limits if processing high span volumes
+
+---
+
+## Testing
+
+Junjo Server has comprehensive test coverage across all services. Tests are organized to support both local development and CI/CD pipelines.
+
+### Quick Start: Run All Tests
+
+```bash
+# Run all tests (backend, frontend, contract validation, proto validation)
+./run-all-tests.sh
+```
+
+This script runs:
+1. **Backend tests** (unit, integration, gRPC) - Python/pytest
+2. **Frontend tests** (unit, integration, component) - TypeScript/Vitest
+3. **Contract tests** (API schema validation) - Validates frontend ↔ backend compatibility
+4. **Proto validation** - Ensures protobuf files are up-to-date
+
+### Test Scripts Organization
+
+**Run everything:**
+- `./run-all-tests.sh` - Complete test suite for all services
+
+**Backend-specific:**
+- `./backend/scripts/run-backend-tests.sh` - All backend tests (unit, integration, gRPC)
+- `./backend/scripts/ci_validate_schemas.sh` - Contract tests (schema validation)
+
+**Frontend-specific:**
+- `cd frontend && npm run test:run` - All frontend tests (exits after completion)
+- `cd frontend && npm test` - All frontend tests (watch mode)
+- `cd frontend && npm run test:contracts` - Contract tests only
+
+**Individual services:**
+- Backend: See [backend/README.md](backend/README.md#testing) for detailed test categories
+- Frontend: See [frontend/README.md](frontend/README.md) for component testing
+- Ingestion: See [ingestion-service/README.md](ingestion-service/README.md) for Go tests
+
+### Contract Testing
+
+Junjo Server uses **contract testing** to prevent frontend/backend API drift. Backend Pydantic schemas are the single source of truth, validated against frontend TypeScript/Zod schemas using OpenAPI-generated mocks.
+
+**How it works:**
+1. Backend exports OpenAPI schema from Pydantic models
+2. Frontend tests generate mocks from OpenAPI spec
+3. Zod schemas validate they can parse the mocks
+4. Tests fail if schemas drift
+
+**Run contract tests:**
+```bash
+./backend/scripts/ci_validate_schemas.sh
+```
+
+See [backend/scripts/README_SCHEMA_VALIDATION.md](backend/scripts/README_SCHEMA_VALIDATION.md) for detailed documentation.
+
+### GitHub Actions
+
+Tests run automatically on all PRs via GitHub Actions:
+- `.github/workflows/backend-tests.yml` - Backend test suite
+- `.github/workflows/schema-validation.yml` - Contract tests
+- `.github/workflows/validate-proto.yml` - Proto file validation
 
 ---
 

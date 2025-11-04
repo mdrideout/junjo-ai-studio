@@ -1,7 +1,14 @@
 #!/bin/bash
 # Run all backend tests including gRPC integration tests
+#
+# Usage:
+#   From backend directory:  ./scripts/run-backend-tests.sh
+#   From repo root:          ./backend/scripts/run-backend-tests.sh
 
-cd "$(dirname "$0")/backend"
+# Determine script directory and navigate to backend root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$BACKEND_DIR"
 
 echo "=========================================="
 echo "Running All Backend Tests"

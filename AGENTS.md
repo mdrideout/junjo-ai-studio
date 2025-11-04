@@ -2007,6 +2007,160 @@ describe('Schema Detection', () => {
 - Example: `components/FeatureCard.test.tsx`
 - May use Testing Library for DOM interactions
 
+#### Contract Tests (Frontend ↔ Backend Schema Validation)
+
+**Purpose:** Prevent frontend/backend API contract drift by validating that frontend Zod schemas can parse backend-generated mock data.
+
+**Philosophy:** Backend Pydantic schemas are the single source of truth. Frontend Zod schemas are validated against backend OpenAPI schemas using:
+- **openapi-backend**: Generates realistic mocks from OpenAPI specification
+- **MSW (Mock Service Worker)**: Intercepts HTTP requests in tests
+- **Zod .parse()**: Validates that mocks match frontend schemas
+
+**How It Works:**
+
+1. **Backend:** Add `Field(examples=[...])` to Pydantic response schemas
+   ```python
+   class UserRead(BaseModel):
+       id: str = Field(
+           examples=["usr_2k4h6j8m9n0p1q2r"],
+           description="Unique user identifier",
+       )
+       email: EmailStr = Field(
+           examples=["alice@example.com"],
+           description="User email address",
+       )
+   ```
+
+2. **Export OpenAPI Schema:** Backend script exports OpenAPI spec to `backend/openapi.json`
+   ```bash
+   cd backend
+   uv run python scripts/export_openapi_schema.py
+   ```
+
+3. **Frontend Contract Tests:** Validate Zod schemas can parse OpenAPI-generated mocks
+   ```typescript
+   import { generateMock } from '@/auth/test-utils/openapi-mock-generator'
+   import { ListUsersResponseSchema } from '@/users/schemas'
+
+   describe('API Contract: UserRead Schema', () => {
+     it('Zod schema can parse OpenAPI-generated mock', () => {
+       const { mock } = generateMock('list_users_users_get')
+       const result = ListUsersResponseSchema.parse(mock)
+
+       expect(result).toBeDefined()
+       expect(Array.isArray(result)).toBe(true)
+     })
+   })
+   ```
+
+**What Gets Caught:**
+- ✅ Backend adds required field → Zod parse fails (missing field)
+- ✅ Backend changes field type → Zod parse fails (type mismatch)
+- ✅ Frontend has wrong field name → Zod parse fails
+- ✅ Backend removes field → Test passes (optional fields OK)
+
+**Running Contract Tests:**
+
+```bash
+# From frontend directory
+npm run test:contracts
+
+# From backend directory (runs full validation pipeline)
+./scripts/ci_validate_schemas.sh
+```
+
+**Adding New Schema Validations:**
+
+1. Add `Field(examples=[...])` to backend Pydantic schema
+2. Create contract test in `frontend/src/__tests__/contracts/`
+3. Run `npm run test:contracts` to verify
+
+**CI/CD Integration:**
+
+Contract tests run automatically on PRs via `.github/workflows/schema-validation.yml` when:
+- `backend/app/**/schemas.py` files change
+- `frontend/src/**/*schema*.ts` files change
+- Contract test files change
+
+**Documentation:** See `backend/scripts/README_SCHEMA_VALIDATION.md` for detailed implementation guide.
+
+#### MSW (Mock Service Worker) for Integration Tests
+
+**Purpose:** Intercept HTTP requests at the network layer in tests, allowing you to mock API responses without modifying fetch() or component code.
+
+**How It Works:**
+
+MSW intercepts HTTP requests using a service worker pattern. In tests, it intercepts fetch() calls and returns mock responses.
+
+**Setup:**
+
+```typescript
+// frontend/src/auth/test-utils/mock-server.ts
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
+
+const API_BASE = 'http://localhost:1323'
+
+export const handlers = [
+  // Mock /users endpoint
+  http.get(`${API_BASE}/users`, () => {
+    return HttpResponse.json([
+      { id: 'usr_123', email: 'test@example.com', is_active: true }
+    ])
+  }),
+]
+
+export const server = setupServer(...handlers)
+```
+
+**Test Setup:**
+
+```typescript
+// vitest.setup.ts
+import { server } from '@/auth/test-utils/mock-server'
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }))
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
+```
+
+**Using MSW in Tests:**
+
+```typescript
+import { server } from '@/auth/test-utils/mock-server'
+import { http, HttpResponse } from 'msw'
+import { generateMock } from '@/auth/test-utils/openapi-mock-generator'
+
+describe('User List', () => {
+  it('renders users from API', async () => {
+    // Override default mock with OpenAPI-generated data
+    const { mock } = generateMock('list_users_users_get')
+    server.use(
+      http.get('http://localhost:1323/users', () => {
+        return HttpResponse.json(mock)
+      })
+    )
+
+    render(<UserList />)
+    await waitFor(() => {
+      expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    })
+  })
+})
+```
+
+**Benefits:**
+
+- ✅ Tests real fetch() calls (no mocking axios/fetch directly)
+- ✅ Works with any HTTP library (fetch, axios, etc.)
+- ✅ Can combine with openapi-backend for realistic mocks
+- ✅ Tests fail if response shape doesn't match frontend schemas
+
+**Documentation:**
+- [MSW Documentation](https://mswjs.io/)
+- [openapi-backend Documentation](https://github.com/anttiviljami/openapi-backend)
+- `frontend/src/auth/test-utils/openapi-mock-generator.ts` - Helper for generating OpenAPI mocks
+
 ## Backend (Python) Organization
 
 The Python backend is being built as a replacement for the Go backend, using FastAPI, SQLAlchemy, and modern Python idioms.
@@ -2276,16 +2430,22 @@ markers = [
 ]
 ```
 
-**Running the full test suite:**
+**Running tests:**
 
-The easiest way to run all backend tests including gRPC integration tests:
+Test scripts are organized in `backend/scripts/` for consistency:
 
 ```bash
-# From repository root
-./run-backend-tests.sh
+# Run all backend tests (unit, integration, gRPC)
+./backend/scripts/run-backend-tests.sh
+
+# Run contract tests (schema validation)
+./backend/scripts/ci_validate_schemas.sh
+
+# Run all tests (backend, frontend, contract, proto)
+./run-all-tests.sh
 ```
 
-This automated script handles:
+The backend test script handles:
 - Temporary database setup
 - Migrations
 - Background server startup

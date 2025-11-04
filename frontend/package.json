@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:contracts": "vitest run -t 'API Contract'"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -50,6 +51,7 @@
     "globals": "^15.14.0",
     "jsdom": "^26.1.0",
     "msw": "^2.11.6",
+    "openapi-backend": "^5.15.0",
     "prettier": "^3.5.1",
     "tailwindcss": "^4.0.7",
     "typescript": "~5.7.2",
