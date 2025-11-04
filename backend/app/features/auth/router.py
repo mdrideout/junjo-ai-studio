@@ -44,14 +44,17 @@ async def db_has_users():
 
 
 @router.post("/users/create-first-user", response_model=UserResponse)
-async def create_first_user(request: CreateUserRequest):
+async def create_first_user(user_request: CreateUserRequest, request: Request):
     """
     Create the first user (only allowed if no users exist).
+
+    Automatically signs in the user after successful creation by setting session.
 
     Mirrors Go implementation: only works if database has no users.
 
     Args:
-        request: CreateUserRequest with email and password
+        user_request: CreateUserRequest with email and password
+        request: FastAPI request object (for session creation)
 
     Returns:
         UserResponse with success message
@@ -60,7 +63,19 @@ async def create_first_user(request: CreateUserRequest):
         HTTPException: 400 if users already exist, 409 if email exists
     """
     try:
-        await AuthService.create_first_user(request.email, request.password)
+        await AuthService.create_first_user(user_request.email, user_request.password)
+
+        # Automatically sign in the newly created user
+        # Validate credentials to get user object
+        user = await AuthService.validate_credentials(user_request.email, user_request.password)
+
+        if user:
+            # Set session (same pattern as sign-in endpoint)
+            request.session["userEmail"] = user.email
+            request.session["session_id"] = secrets.token_urlsafe(32)
+            request.session["authenticated_at"] = datetime.now().isoformat()
+            logger.info(f"First user created and signed in automatically: {user.email}")
+
         return UserResponse(message="First user created successfully")
     except ValueError as e:
         raise HTTPException(

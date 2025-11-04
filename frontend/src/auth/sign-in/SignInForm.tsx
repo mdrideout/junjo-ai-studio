@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { AuthContext } from '../auth-context'
 import { getApiHost } from '../../config'
+import { getPostSignInDestination } from '../navigation-helpers'
 
 export default function SignInForm() {
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +51,11 @@ export default function SignInForm() {
 
       login('') // Token not used with session-based auth
 
-      navigate('/')
+      // Navigate based on API key status
+      console.log('[SignInForm] Checking API keys for navigation...')
+      const destination = await getPostSignInDestination()
+      console.log('[SignInForm] Navigating to:', destination)
+      navigate(destination)
     } catch (err: any) {
       setError(err.message)
     }

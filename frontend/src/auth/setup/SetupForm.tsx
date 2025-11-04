@@ -2,14 +2,19 @@ import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { AuthContext } from '../auth-context'
 import { getApiHost } from '../../config'
+import { getPostSignInDestination } from '../navigation-helpers'
 
 export default function SetupForm() {
   const [error, setError] = useState<string | null>(null)
-  const { isAuthenticated } = useContext(AuthContext)
+  const { isAuthenticated, checkAuthStatus, checkSetupStatus } = useContext(AuthContext)
   const navigate = useNavigate()
 
   useEffect(() => {
+    // If user is already authenticated and lands on this page, redirect to home
+    // (This useEffect won't run during normal first user creation because
+    // the component gets unmounted by AuthGuard when auth state changes)
     if (isAuthenticated) {
+      console.log('[SetupForm] User already authenticated, redirecting to home')
       navigate('/')
     }
   }, [isAuthenticated, navigate])
@@ -45,8 +50,17 @@ export default function SetupForm() {
         throw new Error('/users/create-first-user failed')
       }
 
-      // Reload the page to refresh auth status
-      window.location.reload()
+      // Check auth status to verify session was created
+      // Also check setup status to update needsSetup flag
+      await checkAuthStatus()
+      await checkSetupStatus()
+
+      // Navigate based on API key status
+      // Must do this BEFORE AuthGuard unmounts this component
+      console.log('[SetupForm] Checking API keys for navigation...')
+      const destination = await getPostSignInDestination()
+      console.log('[SetupForm] Navigating to:', destination)
+      navigate(destination)
     } catch (err: any) {
       setError(err.message)
     }

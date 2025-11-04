@@ -1,13 +1,13 @@
 # ---- Base Stage ----
 # Installs dependencies, creating a cached layer.
-FROM node:22-bookworm-slim as base
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm install --prefix ./
 
 # ---- Builder Stage ----
 # Builds the production-ready static assets.
-FROM base as builder
+FROM base AS builder
 
 COPY frontend/package*.json ./
 RUN npm install --prefix ./
@@ -17,7 +17,7 @@ RUN npm run build
 
 # ---- Production Stage ----
 # The final, lightweight production image.
-FROM nginx:stable-alpine as production
+FROM nginx:stable-alpine AS production
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy the startup script and make it executable
@@ -28,7 +28,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 # ---- Development Stage ----
 # Runs the Vite dev server with hot-reloading.
-FROM base as development
+FROM base AS development
 WORKDIR /app
 COPY frontend/ .
 # Environment variables for Vite HMR with Docker
