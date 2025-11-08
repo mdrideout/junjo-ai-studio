@@ -7,13 +7,11 @@ on:
       - 'backend/**'
       - 'proto/**'
       - '.github/workflows/backend-tests.yml'
-      - 'run-backend-tests.sh'
   pull_request:
     paths:
       - 'backend/**'
       - 'proto/**'
       - '.github/workflows/backend-tests.yml'
-      - 'run-backend-tests.sh'
   workflow_dispatch:  # Allow manual triggers
 
 jobs:
@@ -51,8 +49,8 @@ jobs:
 
       - name: Run backend tests
         run: |
-          chmod +x run-backend-tests.sh
-          ./run-backend-tests.sh
+          chmod +x backend/scripts/run-backend-tests.sh
+          ./backend/scripts/run-backend-tests.sh
         env:
           # Ensure clean test environment
           PYTHONUNBUFFERED: "1"

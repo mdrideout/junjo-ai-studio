@@ -58,6 +58,10 @@ jobs:
 
       - name: Run schema validation pipeline
         working-directory: backend
+        env:
+          # Required for loading FastAPI app configuration
+          JUNJO_SESSION_SECRET: ${{ secrets.JUNJO_SESSION_SECRET }}
+          JUNJO_SECURE_COOKIE_KEY: ${{ secrets.JUNJO_SECURE_COOKIE_KEY }}
         run: |
           chmod +x scripts/ci_validate_schemas.sh
           ./scripts/ci_validate_schemas.sh

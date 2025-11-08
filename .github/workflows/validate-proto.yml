@@ -49,8 +49,8 @@ jobs:
           go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
-          # Install Python tools
-          uv pip install grpcio-tools==1.76.0
+          # Install Python tools (--system flag for CI environment)
+          uv pip install --system grpcio-tools==1.76.0
 
           # Verify installation
           protoc --version
