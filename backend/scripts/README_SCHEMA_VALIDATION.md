@@ -9,7 +9,7 @@ This directory contains scripts to prevent frontend/backend API contract drift u
 - **openapi-backend** - Generates realistic mocks from OpenAPI specification
 - **Existing Zod .parse()** - Validates that mocks match frontend schemas
 
-## How It Works
+## How It Works 
 
 ### 1. Backend: Add Field() Examples to Pydantic Schemas
 
