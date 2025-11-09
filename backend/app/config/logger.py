@@ -14,6 +14,26 @@ from loguru import logger
 from app.config.settings import settings
 
 
+def _text_formatter(record: dict) -> str:
+    """Format log record for text output, conditionally showing extras.
+
+    Only includes the {extra} section if it contains data, preventing
+    empty braces from appearing in logs.
+    """
+    base_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+        "<level>{message}</level>"
+    )
+
+    # Only append extra if it has content
+    if record["extra"]:
+        base_format += " | {extra}"
+
+    return base_format + "\n{exception}"
+
+
 def setup_logging() -> None:
     """Configure loguru logger.
 
@@ -29,13 +49,10 @@ def setup_logging() -> None:
     level = settings.log_level.upper()
 
     if settings.log_format.lower() == "text":
-        # Text format: Pretty, colorful logs
+        # Text format: Pretty, colorful logs with conditional extras
         logger.add(
             sys.stdout,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-            "<level>{level: <8}</level> | "
-            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
-            "<level>{message}</level>{extra}",
+            format=_text_formatter,
             level=level,
             colorize=True,
         )
