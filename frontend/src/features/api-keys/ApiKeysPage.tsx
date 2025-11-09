@@ -4,6 +4,7 @@ import { RootState } from '../../root-store/store'
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon'
 import ApiKeyCopyButton from './ApiKeyCopyButton'
 import CreateApiKeyDialog from './CreateApiKeyDialog'
+import OtelExporterGuide from './components/OtelExporterGuide'
 import { ApiKeysStateActions } from './slice'
 
 export default function ApiKeysPage() {
@@ -25,7 +26,7 @@ export default function ApiKeysPage() {
 
   // Render the list
   return (
-    <div className={'px-3 py-4 flex flex-col h-dvh overflow-hidden'}>
+    <div className={'px-3 py-4 flex flex-col h-dvh overflow-y-auto'}>
       <div className={'flex gap-x-3 px-2 items-center'}>
         <div className={'flex gap-x-3 font-bold'}>API Keys</div>
         <CreateApiKeyDialog />
@@ -88,6 +89,11 @@ export default function ApiKeysPage() {
             </tbody>
           </table>
         )}
+      </div>
+
+      {/* Getting Started Guide - Below the table */}
+      <div className={'px-2 mt-6'}>
+        <OtelExporterGuide />
       </div>
     </div>
   )
