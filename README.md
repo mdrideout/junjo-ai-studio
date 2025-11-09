@@ -1,26 +1,27 @@
-# Junjo Server
+# Junjo AI Studio
 
-> 順序 - order, sequence, procedure
+> Junjo (順序) - order, sequence, procedure
 
-**Junjo Server** is an OpenTelemetry ingestion server and AI graph workflow debugging interface for the [Junjo Python Library](https://github.com/mdrideout/junjo).
+**Junjo AI Studio** is an open source, self-hostable AI Agent and Workflow debugging and eval platform for any OpenTelemetry instrumented AI application. 
 
-If you've struggled to understand what decisions your LLM is making in a chained sequence of events, and what data it is basing its decisions on, Junjo Server is for you. You will gain complete visibility to the state of the application, and every change LLMs make to the application state.
+The [Junjo Python Library](https://github.com/mdrideout/junjo) is a framework for structuring AI logic and enhancing Otel span data to improve observability and developer velocity. Junjo remains decoupled from your LLM implemetations and business logic, proving a layer of orgnization, execution, and telemetry to your existing application.
 
-**Complex, mission critical AI workflows are made transparent and understandable with Junjo and Junjo Server.**
+Gain complete visibility to the state of the application, and every change LLMs make to the application state. Complex, mission critical AI workflows are made transparent and understandable with Junjo.
 
-<img src="https://python-api.junjo.ai/_images/junjo-screenshot.png" width="600" />
+<img src="https://python-api.junjo.ai/_images/junjo-screenshot.png" width="800" />
 
-_Junjo Server Frontend Screenshot_
+_Junjo AI Studio Workflow Debugging Screenshot_
 
 ### Key Features
 
 - 🔍 **Real-time LLM Decision Visibility** - See every decision your LLM makes and the data it uses
+- 🔀 **Transparent Concurrency** - Debug state changes from concurrently executed AI workflow steps
 - 📊 **OpenTelemetry Native** - Standards-based telemetry ingestion via gRPC
-- 🎯 **Workflow Debugging Interface** - Visual debugging of AI graph workflows
-- 🪶 **Prompt Playground** - Expirement with other models and prompt tweaks while you debug
-- 🚀 **High-Performance Ingestion** - Decoupled ingestion service with BadgerDB WAL
-- 🔒 **Production-Ready Security** - Session-based authentication with encrypted cookies
-- 💾 **Low Resource Requirements** - Runs on shared vCPU with 1GB RAM
+- 🎯 **Workflow Debugging Interface** - Visual step-by-step debugging of AI graph workflows
+- 🪶 **Prompt Playground** - Expirement with different models and prompt tweaks while you debug
+- 🔒 **Production-Ready Security** - Authentication, user accounts, and encrypted sessions
+- 🚀 **Low Resource, High-Performance Ingestion** - Designed for high-throughput in low resource environments
+- 💾 **Shared vCPU, 1GB Ram** - Production grade telemetry on a $5 / month virutal machine
 
 ---
 
@@ -41,7 +42,7 @@ _Junjo Server Frontend Screenshot_
 
 ## Quick Start
 
-Get Junjo Server running on your local machine in 5 minutes using the **[Junjo Server Bare Bones](https://github.com/mdrideout/junjo-server-bare-bones)** repository. This repository provides a minimal, standalone setup using pre-built Docker images from Docker Hub, perfect for quick testing and production deployments of Junjo Server.
+Get Junjo AI Studio running on your local machine in 5 minutes using the **[Junjo AI Studio Bare Bones](https://github.com/mdrideout/junjo-server-bare-bones)** repository. This repository provides a minimal, standalone setup using pre-built Docker images from Docker Hub, perfect for both quick testing and production deployments of Junjo AI Studio.
 
 ### Steps
 
@@ -81,7 +82,7 @@ Get Junjo Server running on your local machine in 5 minutes using the **[Junjo S
    docker compose up -d
    ```
 
-6. **Access Junjo Server**
+6. **Access Junjo AI Studio**
    - **Frontend**: http://localhost:5153
    - **Backend API**: http://localhost:1323
    - **OTLP Ingestion Endpoint**: grpc://localhost:50051
@@ -125,13 +126,13 @@ docker compose down -v
 
 Configure your [Junjo Python Library](https://github.com/mdrideout/junjo) application to send telemetry to `grpc://localhost:50051` using the API key you created.
 
-**For source code development**: If you want to modify Junjo Server's source code (not just use it), see the development guides in `backend/README.md`, `frontend/README.md`, and `ingestion-service/README.md` in the main [junjo-server repository](https://github.com/mdrideout/junjo-server).
+**For source code development**: If you want to modify Junjo AI Studio's source code (not just use it), see the development guides in `backend/README.md`, `frontend/README.md`, and `ingestion-service/README.md` in the main [junjo-server repository](https://github.com/mdrideout/junjo-server).
 
 ---
 
 ## Features
 
-### What Can You Do With Junjo Server?
+### What Can You Do With Junjo AI Studio?
 
 **Observability & Debugging:**
 - View complete execution traces of AI workflows
@@ -158,7 +159,7 @@ Configure your [Junjo Python Library](https://github.com/mdrideout/junjo) applic
 
 ## Architecture
 
-The Junjo Server is composed of three primary services:
+The Junjo AI Studio is composed of three primary services:
 
 ### 1. Backend (`junjo-server-backend`)
 - **Tech Stack**: FastAPI (Python), SQLite, DuckDB
@@ -219,7 +220,7 @@ The `backend` service polls the `ingestion-service`'s internal gRPC API to read 
 
 ### Environment Variables
 
-Junjo Server uses a single `.env` file at the root of the project. All services read from this file.
+Junjo AI Studio uses a single `.env` file at the root of the project. All services read from this file.
 
 #### Key Configuration Variables
 
@@ -269,7 +270,7 @@ GEMINI_API_KEY=...
 
 ### Database Storage Configuration
 
-Junjo Server uses a **two-layer system** for database storage that separates host machine paths from container paths:
+Junjo AI Studio uses a **two-layer system** for database storage that separates host machine paths from container paths:
 
 #### Understanding the Two Layers
 
@@ -337,7 +338,7 @@ docker compose up -d
 
 #### Database Types
 
-Junjo Server uses three embedded databases:
+Junjo AI Studio uses three embedded databases:
 
 | Database | Purpose | Type |
 |----------|---------|------|
@@ -349,7 +350,7 @@ All are stored under `HOST_DB_DATA_PATH` on your host machine.
 
 ### Creating API Keys
 
-After starting Junjo Server:
+After starting Junjo AI Studio:
 1. Sign in to the web UI (http://localhost:5153)
 2. Navigate to **Settings → API Keys**
 3. Click **Create API Key**
@@ -370,7 +371,7 @@ After starting Junjo Server:
 - ✅ `example.com` + `api.example.com` (apex + subdomain)
 - ❌ `app.example.com` + `service.run.app` (different domains - **will NOT work**)
 
-**Why?** Junjo Server uses session cookies with `SameSite=Strict` for security (CSRF protection). Cross-domain deployments will cause authentication to fail.
+**Why?** Junjo AI Studio uses session cookies with `SameSite=Strict` for security (CSRF protection). Cross-domain deployments will cause authentication to fail.
 
 **📖 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for complete deployment guide**, including:
 - Platform-specific examples (Google Cloud Run, AWS, Docker Compose)
@@ -380,17 +381,17 @@ After starting Junjo Server:
 
 ### Turn-Key Example Repositories
 
-#### Junjo Server Bare Bones
+#### Junjo AI Studio Bare Bones
 **[https://github.com/mdrideout/junjo-server-bare-bones](https://github.com/mdrideout/junjo-server-bare-bones)**
 
-A minimal, standalone repository with just the core Junjo Server components using pre-built Docker images.
+A minimal, standalone repository with just the core Junjo AI Studio components using pre-built Docker images.
 
 **Best for:**
-- Quick testing of Junjo Server
+- Quick testing of Junjo AI Studio
 - Simple production deployments
 - Integration into existing infrastructure
 
-#### Junjo Server Deployment Example
+#### Junjo AI Studio Deployment Example
 **[https://github.com/mdrideout/junjo-server-deployment-example](https://github.com/mdrideout/junjo-server-deployment-example)**
 
 A complete, production-ready example that includes a Junjo Python Library application alongside the server infrastructure.
@@ -405,7 +406,7 @@ The [README](https://github.com/mdrideout/junjo-server-deployment-example/blob/m
 
 ### Docker Compose - Production Images
 
-Junjo Server is built and deployed to **Docker Hub** with each GitHub release:
+Junjo AI Studio is built and deployed to **Docker Hub** with each GitHub release:
 
 - **Backend**: [mdrideout/junjo-server-backend](https://hub.docker.com/r/mdrideout/junjo-server-backend)
 - **Ingestion Service**: [mdrideout/junjo-server-ingestion-service](https://hub.docker.com/r/mdrideout/junjo-server-ingestion-service)
@@ -485,11 +486,11 @@ networks:
     driver: bridge
 ```
 
-For a more complete example with reverse proxy, see the [Junjo Server Deployment Example Repository](https://github.com/mdrideout/junjo-server-deployment-example/blob/master/docker-compose.yml).
+For a more complete example with reverse proxy, see the [Junjo AI Studio Deployment Example Repository](https://github.com/mdrideout/junjo-server-deployment-example/blob/master/docker-compose.yml).
 
 ### VM Resource Requirements
 
-Junjo Server is designed to be low resource:
+Junjo AI Studio is designed to be low resource:
 - **Minimum**: Shared vCPU + 1GB RAM
 - **Databases**: SQLite, DuckDB, BadgerDB (all embedded, low overhead)
 - **Recommended**: 1 vCPU + 2GB RAM for production workloads
@@ -540,7 +541,7 @@ duckdb ./.dbdata/duckdb/traces.duckdb
 
 ## Testing
 
-Junjo Server has comprehensive test coverage across all services. Tests are organized to support both local development and CI/CD pipelines.
+Junjo AI Studio has comprehensive test coverage across all services. Tests are organized to support both local development and CI/CD pipelines.
 
 ### Quick Start: Run All Tests
 
@@ -576,7 +577,7 @@ This script runs:
 
 ### Contract Testing
 
-Junjo Server uses **contract testing** to prevent frontend/backend API drift. Backend Pydantic schemas are the single source of truth, validated against frontend TypeScript/Zod schemas using OpenAPI-generated mocks.
+Junjo AI Studio uses **contract testing** to prevent frontend/backend API drift. Backend Pydantic schemas are the single source of truth, validated against frontend TypeScript/Zod schemas using OpenAPI-generated mocks.
 
 **How it works:**
 1. Backend exports OpenAPI schema from Pydantic models
@@ -695,8 +696,8 @@ docker compose up
 - **[Junjo Python Library](https://github.com/mdrideout/junjo)** - AI Graph Workflow framework
 
 ### Example Repositories
-- **[Junjo Server Bare Bones](https://github.com/mdrideout/junjo-server-bare-bones)** - Minimal setup with pre-built images
-- **[Junjo Server Deployment Example](https://github.com/mdrideout/junjo-server-deployment-example)** - Complete production deployment with Caddy
+- **[Junjo AI Studio Bare Bones](https://github.com/mdrideout/junjo-server-bare-bones)** - Minimal setup with pre-built images
+- **[Junjo AI Studio Deployment Example](https://github.com/mdrideout/junjo-server-deployment-example)** - Complete production deployment with Caddy
 
 ### Docker Hub Images
 - **[junjo-server-backend](https://hub.docker.com/r/mdrideout/junjo-server-backend)** - FastAPI backend
@@ -709,4 +710,4 @@ docker compose up
 
 ---
 
-**Junjo Server** - Making AI workflows transparent and understandable.
+**Junjo AI Studio** - Making AI workflows transparent and understandable.
