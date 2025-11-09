@@ -25,7 +25,7 @@ def init_otel(service_name: str):
     junjo_exporter = JunjoServerOtelExporter(
         host="localhost",        # Dev: localhost | Prod: grpc.junjo.example.com
         port="50051",            # Dev: 50051 | Prod: 443 (or your port)
-        api_key="YOUR_API_KEY",  # From API Keys page
+        api_key="YOUR_API_KEY",  # From API Keys page (set as environment variable)
         insecure=True,           # Set to False for production HTTPS
     )
 
