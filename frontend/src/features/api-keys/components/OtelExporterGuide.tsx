@@ -107,7 +107,7 @@ export default function OtelExporterGuide() {
 
             {/* Code example */}
             <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
-              <pre className="p-4 overflow-x-auto bg-[#0d1117] text-sm">
+              <pre className="p-4 overflow-x-auto bg-zinc-50 dark:bg-[#0d1117] text-sm">
                 <code>{highlightedCode || codeExample}</code>
               </pre>
             </div>
