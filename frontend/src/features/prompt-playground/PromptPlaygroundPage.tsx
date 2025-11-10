@@ -13,6 +13,7 @@ import CircularProgress from '../../components/CircularProgress'
 import { detectProviderWarnings, detectJsonSchema } from './utils/provider-warnings'
 import { mapOtelProviderToInternal } from './utils/provider-mapping'
 import { ensureOpenAISchemaCompatibility } from './utils/schema-utils'
+import { supportsTemperature } from './utils/model-capabilities'
 import ProviderWarningBanner from './components/ProviderWarningBanner'
 import ProviderWarningModal from './components/ProviderWarningModal'
 import JsonSchemaBanner from './components/JsonSchemaBanner'
@@ -319,9 +320,10 @@ export default function PromptPlaygroundPage() {
         messages: [{ role: 'user', content: prompt }],
 
         // Common parameters (work across all providers)
-        ...(generationSettings.temperature !== undefined && {
-          temperature: generationSettings.temperature,
-        }),
+        ...(generationSettings.temperature !== undefined &&
+          supportsTemperature(selectedModel) && {
+            temperature: generationSettings.temperature,
+          }),
         ...(generationSettings.max_tokens && {
           max_tokens: generationSettings.max_tokens,
         }),

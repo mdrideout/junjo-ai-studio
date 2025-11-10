@@ -4,14 +4,17 @@
 
 /**
  * Ensures a JSON schema is compatible with OpenAI's strict mode by adding
- * `additionalProperties: false` to all object types recursively.
+ * `additionalProperties: false` and `required` fields to all object types recursively.
  *
- * OpenAI's strict structured outputs require that every object in the schema
- * explicitly sets `additionalProperties: false`. Other providers (Gemini, Anthropic)
- * don't have this requirement, so schemas from those providers need transformation.
+ * OpenAI's strict structured outputs require that every object in the schema:
+ * 1. Explicitly sets `additionalProperties: false`
+ * 2. Has a `required` array containing all property keys
+ *
+ * Other providers (Gemini, Anthropic) don't have these requirements, so schemas
+ * from those providers need transformation.
  *
  * @param schema - The original JSON schema (not modified)
- * @returns A new schema with `additionalProperties: false` added to all objects
+ * @returns A new schema with OpenAI strict mode requirements applied
  */
 export function ensureOpenAISchemaCompatibility(schema: Record<string, any>): Record<string, any> {
   // Deep clone to avoid mutating the original
@@ -23,11 +26,17 @@ export function ensureOpenAISchemaCompatibility(schema: Record<string, any>): Re
     }
 
     // If this is an object type definition, ensure additionalProperties is false
+    // and required contains all property keys
     if (obj.type === 'object') {
-      obj.additionalProperties = false
-
-      // Recursively process properties
+      // Add required field with all property keys
       if (obj.properties && typeof obj.properties === 'object') {
+        const propertyKeys = Object.keys(obj.properties)
+        if (propertyKeys.length > 0) {
+          // Only set required if there are properties
+          obj.required = propertyKeys
+        }
+
+        // Recursively process properties
         for (const key in obj.properties) {
           addAdditionalPropertiesRecursive(obj.properties[key])
         }
@@ -40,9 +49,13 @@ export function ensureOpenAISchemaCompatibility(schema: Record<string, any>): Re
         }
       }
 
-      // Handle additionalProperties if it's a schema (not just false/true)
+      // Handle additionalProperties:
+      // - If it's a schema object, process it recursively (don't overwrite it)
+      // - Otherwise, ensure it's set to false
       if (typeof obj.additionalProperties === 'object') {
         addAdditionalPropertiesRecursive(obj.additionalProperties)
+      } else if (obj.additionalProperties === undefined) {
+        obj.additionalProperties = false
       }
     }
 
