@@ -92,7 +92,7 @@ export default function ApiKeysPage() {
       </div>
 
       {/* Getting Started Guide - Below the table */}
-      <div className={'px-2 mt-6'}>
+      <div className={'px-2 mt-12'}>
         <OtelExporterGuide />
       </div>
     </div>
