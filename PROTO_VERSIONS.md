@@ -1,6 +1,6 @@
 # Protocol Buffer Tool Versions
 
-This document specifies the **locked versions** of Protocol Buffer tools used across the Junjo Server project. All environments (local development, CI/CD, Docker builds) must use these exact versions to ensure generated code is identical.
+This document specifies the **locked versions** of Protocol Buffer tools used across the Junjo AI Studio project. All environments (local development, CI/CD, Docker builds) must use these exact versions to ensure generated code is identical.
 
 ## Required Tool Versions
 
@@ -148,9 +148,9 @@ The pre-commit hook (`scripts/pre-commit.sh`) **automatically checks versions** 
 
 ## Regenerating Proto Files
 
-### Go (ingestion-service)
+### Go (ingestion)
 ```bash
-cd ingestion-service
+cd ingestion
 make proto
 ```
 
@@ -241,7 +241,7 @@ When updating to newer tool versions:
 
 1. Update version numbers in this file
 2. Update `.github/workflows/validate-proto.yml`
-3. Update all Dockerfiles (`ingestion-service/Dockerfile`, `backend/Dockerfile`)
+3. Update all Dockerfiles (`ingestion/Dockerfile`, `backend/Dockerfile`)
 4. Regenerate proto files locally
 5. Test Docker builds for all services
 6. Commit all updated files in a single commit

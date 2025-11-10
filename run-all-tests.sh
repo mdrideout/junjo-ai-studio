@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run all tests across the entire Junjo Server project
+# Run all tests across the entire Junjo AI Studio project
 #
 # This script runs:
 #   1. Backend tests (unit, integration, gRPC)
@@ -22,7 +22,7 @@ CONTRACT_RESULT=0
 PROTO_RESULT=0
 
 echo "=============================================="
-echo "Running All Junjo Server Tests"
+echo "Running All Junjo AI Studio Tests"
 echo "=============================================="
 echo ""
 
@@ -63,7 +63,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "4/4: Proto File Validation"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Regenerating Go proto files..."
-cd ingestion-service
+cd ingestion
 make proto > /dev/null 2>&1
 cd ..
 
@@ -73,11 +73,11 @@ cd backend
 cd ..
 
 echo "Checking for uncommitted proto changes..."
-if git diff --quiet -- 'proto/' 'ingestion-service/proto_gen/' 'backend/app/proto_gen/'; then
+if git diff --quiet -- 'proto/' 'ingestion/proto_gen/' 'backend/app/proto_gen/'; then
     echo "✅ Proto files are up-to-date"
 else
     echo "❌ Proto files have uncommitted changes"
-    git diff --name-only -- 'proto/' 'ingestion-service/proto_gen/' 'backend/app/proto_gen/'
+    git diff --name-only -- 'proto/' 'ingestion/proto_gen/' 'backend/app/proto_gen/'
     PROTO_RESULT=1
 fi
 echo ""

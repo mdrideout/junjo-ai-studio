@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"junjo-server/ingestion-service/backend_client"
+	"junjo-ai-studio/ingestion/backend_client"
 	"log/slog"
 	"time"
 

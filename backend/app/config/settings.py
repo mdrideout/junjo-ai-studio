@@ -19,8 +19,8 @@ def find_env_file() -> str:
     Find .env file in current directory or parent directory.
 
     This allows the app to work whether running from:
-    - Repository root: /Users/matt/repos/junjo-server/
-    - Backend directory: /Users/matt/repos/junjo-server/backend/
+    - Repository root: /Users/matt/repos/junjo-ai-studio/
+    - Backend directory: /Users/matt/repos/junjo-ai-studio/backend/
 
     Returns:
         Path to .env file (current dir, parent dir, or default ".env")
@@ -41,12 +41,19 @@ class DatabaseSettings(BaseSettings):
     """Database configuration"""
 
     sqlite_path: Annotated[
-        str, Field(default="../.dbdata/sqlite/junjo.db", description="Path to SQLite database file")
+        str,
+        Field(
+            default="../.dbdata/sqlite/junjo.db",
+            description="Path to SQLite database file",
+            validation_alias="JUNJO_SQLITE_PATH",
+        ),
     ]
     duckdb_path: Annotated[
         str,
         Field(
-            default="../.dbdata/duckdb/traces.duckdb", description="Path to DuckDB database file"
+            default="../.dbdata/duckdb/traces.duckdb",
+            description="Path to DuckDB database file",
+            validation_alias="JUNJO_DUCKDB_PATH",
         ),
     ]
 
@@ -79,7 +86,6 @@ class DatabaseSettings(BaseSettings):
         return f"duckdb+aiosqlite:///{abs_path}"
 
     model_config = SettingsConfigDict(
-        env_prefix="DB_",
         env_file=find_env_file(),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -93,24 +99,32 @@ class SessionCookieSettings(BaseSettings):
         str,
         Field(
             description="Base64-encoded 32-byte encryption key for SecureCookiesMiddleware (Fernet/AES-256). "
-            "Generate with: openssl rand -base64 32"
+            "Generate with: openssl rand -base64 32",
+            validation_alias="JUNJO_SECURE_COOKIE_KEY",
         ),
     ]
     session_secret: Annotated[
         str,
         Field(
             description="Signing secret for SessionMiddleware (any length). "
-            "Generate with: openssl rand -base64 32"
+            "Generate with: openssl rand -base64 32",
+            validation_alias="JUNJO_SESSION_SECRET",
         ),
     ]
     junjo_env: Annotated[
-        str, Field(default="development", description="Environment (development/production)")
+        str,
+        Field(
+            default="development",
+            description="Environment (development/production)",
+            validation_alias="JUNJO_ENV",
+        ),
     ]
     junjo_prod_auth_domain: Annotated[
         str,
         Field(
             default="",
             description="Production auth domain for subdomain cookie support (e.g., 'junjo.io')",
+            validation_alias="JUNJO_PROD_AUTH_DOMAIN",
         ),
     ]
 
@@ -157,7 +171,6 @@ class SessionCookieSettings(BaseSettings):
         return v
 
     model_config = SettingsConfigDict(
-        env_prefix="JUNJO_",
         env_file=find_env_file(),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -167,10 +180,23 @@ class SessionCookieSettings(BaseSettings):
 class IngestionServiceSettings(BaseSettings):
     """Ingestion service gRPC connection settings"""
 
-    host: Annotated[str, Field(default="localhost", description="Ingestion service gRPC host")]
+    host: Annotated[
+        str,
+        Field(
+            default="localhost",
+            description="Ingestion service gRPC host",
+            validation_alias="INGESTION_HOST",
+        ),
+    ]
     port: Annotated[
         int,
-        Field(default=50052, ge=1, le=65535, description="Ingestion service internal gRPC port"),
+        Field(
+            default=50052,
+            ge=1,
+            le=65535,
+            description="Ingestion service internal gRPC port",
+            validation_alias="INGESTION_PORT",
+        ),
     ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -180,7 +206,6 @@ class IngestionServiceSettings(BaseSettings):
         return f"{self.host}:{self.port}"
 
     model_config = SettingsConfigDict(
-        env_prefix="INGESTION_",
         env_file=find_env_file(),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -193,25 +218,51 @@ class SpanIngestionSettings(BaseSettings):
     INGESTION_HOST: Annotated[
         str,
         Field(
-            default="junjo-server-ingestion",
+            default="junjo-ai-studio-ingestion",
             description="Ingestion service hostname for span reading",
+            validation_alias="INGESTION_HOST",
         ),
     ]
     INGESTION_PORT: Annotated[
-        int, Field(default=50052, ge=1, le=65535, description="Ingestion service gRPC port")
+        int,
+        Field(
+            default=50052,
+            ge=1,
+            le=65535,
+            description="Ingestion service gRPC port",
+            validation_alias="INGESTION_PORT",
+        ),
     ]
     SPAN_POLL_INTERVAL: Annotated[
-        int, Field(default=5, ge=1, le=3600, description="Span polling interval in seconds")
+        int,
+        Field(
+            default=5,
+            ge=1,
+            le=3600,
+            description="Span polling interval in seconds",
+            validation_alias="SPAN_POLL_INTERVAL",
+        ),
     ]
     SPAN_BATCH_SIZE: Annotated[
-        int, Field(default=100, ge=1, le=10000, description="Maximum spans to read per poll")
+        int,
+        Field(
+            default=100,
+            ge=1,
+            le=10000,
+            description="Maximum spans to read per poll",
+            validation_alias="SPAN_BATCH_SIZE",
+        ),
     ]
     SPAN_STRICT_MODE: Annotated[
-        bool, Field(default=False, description="If True, fail entire batch on state patch errors")
+        bool,
+        Field(
+            default=False,
+            description="If True, fail entire batch on state patch errors",
+            validation_alias="SPAN_STRICT_MODE",
+        ),
     ]
 
     model_config = SettingsConfigDict(
-        env_prefix="SPAN_",
         env_file=find_env_file(),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -250,6 +301,7 @@ class AppSettings(BaseSettings):
             ge=1,
             le=65535,
             description="HTTP server port (internal container port, typically 1323)",
+            validation_alias="JUNJO_BACKEND_PORT",
         ),
     ]
 
@@ -266,9 +318,21 @@ class AppSettings(BaseSettings):
 
     # Logging
     log_level: Annotated[
-        str, Field(default="info", description="Log level: debug, info, warn, error")
+        str,
+        Field(
+            default="info",
+            description="Log level: debug, info, warn, error",
+            validation_alias="JUNJO_LOG_LEVEL",
+        ),
     ]
-    log_format: Annotated[str, Field(default="json", description="Log format: json, text")]
+    log_format: Annotated[
+        str,
+        Field(
+            default="json",
+            description="Log format: json, text",
+            validation_alias="JUNJO_LOG_FORMAT",
+        ),
+    ]
 
     # CORS
     # Note: Type is str | list[str] to prevent Pydantic Settings from trying

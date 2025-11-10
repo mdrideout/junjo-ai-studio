@@ -7,13 +7,13 @@ import { useAppSelector } from '../../../root-store/hooks'
 import { selectServiceNames } from '../../traces/store/selectors'
 import '@wooorm/starry-night/style/both'
 
-const codeExample = `from junjo.telemetry.junjo_server_otel_exporter import JunjoServerOtelExporter
+const codeExample = `from junjo.telemetry.junjo_otel_exporter import JunjoOtelExporter
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 
 def init_otel(service_name: str):
-    """Configure OpenTelemetry with Junjo Server exporter."""
+    """Configure OpenTelemetry with JunjoOtelExporter."""
 
     # Create OpenTelemetry Resource
     resource = Resource.create({"service.name": service_name})
@@ -21,8 +21,8 @@ def init_otel(service_name: str):
     # Set up tracing
     tracer_provider = TracerProvider(resource=resource)
 
-    # Junjo Server exporter - works alongside Honeycomb, Signoz, Jaeger, etc.
-    junjo_exporter = JunjoServerOtelExporter(
+    # JunjoOtelExporter - works alongside Honeycomb, Signoz, Jaeger, etc.
+    junjo_exporter = JunjoOtelExporter(
         host="localhost",        # Dev: localhost | Prod: grpc.junjo.example.com
         port="50051",            # Dev: 50051 | Prod: 443 (or your port)
         api_key="YOUR_API_KEY",  # From API Keys page (set as environment variable)
@@ -80,7 +80,7 @@ export default function OtelExporterGuide() {
           <div className="space-y-4">
             {/* Introduction */}
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Add the Junjo Server exporter to your Python application. The exporter works alongside other
+              Add the Junjo exporter to your Python application. The exporter works alongside other
               observability providers like Honeycomb, Signoz, or Jaeger — simply add it as an additional span
               processor.
             </p>

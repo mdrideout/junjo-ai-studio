@@ -1,7 +1,7 @@
 """
 Internal authentication gRPC service for validating API keys.
 
-This service provides the ValidateApiKey RPC endpoint used by the ingestion-service
+This service provides the ValidateApiKey RPC endpoint used by the ingestion service
 to validate API keys with caching support.
 """
 
@@ -16,7 +16,7 @@ class InternalAuthServicer(auth_pb2_grpc.InternalAuthServiceServicer):
     """
     gRPC servicer implementation for internal API key authentication.
 
-    This service is called by the ingestion-service to validate API keys.
+    This service is called by the ingestion service to validate API keys.
     It queries the database to check if a key exists and is valid.
     """
 
@@ -62,5 +62,5 @@ class InternalAuthServicer(auth_pb2_grpc.InternalAuthServiceServicer):
             )
 
             # Return False instead of raising error (fail closed)
-            # The ingestion-service will treat this as invalid
+            # The ingestion service will treat this as invalid
             return auth_pb2.ValidateApiKeyResponse(is_valid=False)

@@ -19,11 +19,11 @@ RUN apk add --no-cache curl unzip && \
 COPY proto/ ../proto/
 
 # Copy Go module files and download dependencies
-COPY ingestion-service/go.mod ingestion-service/go.sum ./
+COPY ingestion/go.mod ingestion/go.sum ./
 RUN go mod download
 
 # Copy the rest of the application source code
-COPY ingestion-service/ .
+COPY ingestion/ .
 
 # Install protoc v30.2 and Go protobuf plugins with locked versions
 RUN PROTOC_VERSION=30.2 && \
@@ -65,11 +65,11 @@ RUN apk add --no-cache curl unzip
 COPY proto/ ../proto/
 
 # Copy Go module files and download dependencies
-COPY ingestion-service/go.mod ingestion-service/go.sum ./
+COPY ingestion/go.mod ingestion/go.sum ./
 RUN go mod download
 
 # Copy the rest of the application source code
-COPY ingestion-service/ .
+COPY ingestion/ .
 
 # Install protoc v30.2 and Go protobuf plugins with locked versions
 RUN PROTOC_VERSION=30.2 && \
@@ -89,7 +89,7 @@ RUN protoc \
     ../proto/*.proto
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /ingestion-service
+RUN CGO_ENABLED=0 GOOS=linux go build -o /ingestion
 
 # --- 3. Final Production Image ---
 FROM alpine:latest AS production
@@ -104,7 +104,7 @@ RUN apk add --no-cache tini curl && \
     apk del curl
 
 # Copy the binary from the builder stage
-COPY --from=builder /ingestion-service /ingestion-service
+COPY --from=builder /ingestion /ingestion
 
 # Expose ports
 # Public OTLP endpoint (authenticated via API key - mapped to host)
@@ -116,4 +116,4 @@ EXPOSE 50052
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Command to run the application
-CMD ["/ingestion-service"]
+CMD ["/ingestion"]

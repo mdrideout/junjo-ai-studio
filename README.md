@@ -126,7 +126,7 @@ docker compose down -v
 
 Configure your [Junjo Python Library](https://github.com/mdrideout/junjo) application to send telemetry to `grpc://localhost:50051` using the API key you created.
 
-**For source code development**: If you want to modify Junjo AI Studio's source code (not just use it), see the development guides in `backend/README.md`, `frontend/README.md`, and `ingestion-service/README.md` in the main [junjo-server repository](https://github.com/mdrideout/junjo-server).
+**For source code development**: If you want to modify Junjo AI Studio's source code (not just use it), see the development guides in `backend/README.md`, `frontend/README.md`, and `ingestion/README.md` in the main [junjo-server repository](https://github.com/mdrideout/junjo-server).
 
 ---
 
@@ -195,7 +195,7 @@ Backend Service ← polls for new spans ← BadgerDB WAL
     Frontend UI
 ```
 
-The `backend` service polls the `ingestion-service`'s internal gRPC API to read batches of spans from the WAL, which it then indexes into DuckDB for analytics queries.
+The `backend` service polls the `ingestion`'s internal gRPC API to read batches of spans from the WAL, which it then indexes into DuckDB for analytics queries.
 
 ---
 
@@ -409,7 +409,7 @@ The [README](https://github.com/mdrideout/junjo-server-deployment-example/blob/m
 Junjo AI Studio is built and deployed to **Docker Hub** with each GitHub release:
 
 - **Backend**: [mdrideout/junjo-server-backend](https://hub.docker.com/r/mdrideout/junjo-server-backend)
-- **Ingestion Service**: [mdrideout/junjo-server-ingestion-service](https://hub.docker.com/r/mdrideout/junjo-server-ingestion-service)
+- **Ingestion Service**: [mdrideout/junjo-server-ingestion](https://hub.docker.com/r/mdrideout/junjo-server-ingestion)
 - **Frontend**: [mdrideout/junjo-server-frontend](https://hub.docker.com/r/mdrideout/junjo-server-frontend)
 
 **Example docker-compose.yml:**
@@ -440,7 +440,7 @@ services:
       start_period: 5s
 
   junjo-server-ingestion:
-    image: mdrideout/junjo-server-ingestion-service:latest
+    image: mdrideout/junjo-server-ingestion:latest
     container_name: junjo-server-ingestion
     restart: unless-stopped
     volumes:
@@ -573,7 +573,7 @@ This script runs:
 **Individual services:**
 - Backend: See [backend/README.md](backend/README.md#testing) for detailed test categories
 - Frontend: See [frontend/README.md](frontend/README.md) for component testing
-- Ingestion: See [ingestion-service/README.md](ingestion-service/README.md) for Go tests
+- Ingestion: See [ingestion/README.md](ingestion/README.md) for Go tests
 
 ### Contract Testing
 
@@ -701,7 +701,7 @@ docker compose up
 
 ### Docker Hub Images
 - **[junjo-server-backend](https://hub.docker.com/r/mdrideout/junjo-server-backend)** - FastAPI backend
-- **[junjo-server-ingestion-service](https://hub.docker.com/r/mdrideout/junjo-server-ingestion-service)** - Go gRPC ingestion service
+- **[junjo-server-ingestion](https://hub.docker.com/r/mdrideout/junjo-server-ingestion)** - Go gRPC ingestion service
 - **[junjo-server-frontend](https://hub.docker.com/r/mdrideout/junjo-server-frontend)** - React frontend
 
 ### OpenTelemetry Resources
@@ -711,3 +711,10 @@ docker compose up
 ---
 
 **Junjo AI Studio** - Making AI workflows transparent and understandable.
+
+Copyright (C) 2025 Matthew Rideout
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.

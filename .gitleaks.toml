@@ -1,7 +1,7 @@
-# Gitleaks configuration for Junjo Server
+# Gitleaks configuration for Junjo AI Studio
 # https://github.com/gitleaks/gitleaks
 
-title = "Junjo Server Gitleaks Config"
+title = "Junjo AI Studio Gitleaks Config"
 
 [extend]
 # Use default gitleaks rules

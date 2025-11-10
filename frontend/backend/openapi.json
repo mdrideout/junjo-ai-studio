@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Junjo Server",
+    "title": "Junjo AI Studio",
     "description": "LLM Observability Platform - Python Backend",
     "version": "0.1.0"
   },

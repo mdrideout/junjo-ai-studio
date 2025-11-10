@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// InternalAuthService provides a private API for the ingestion-service to
+// InternalAuthService provides a private API for the ingestion service to
 // validate API keys.
 type InternalAuthServiceClient interface {
 	// ValidateApiKey checks if an API key is valid.
@@ -55,7 +55,7 @@ func (c *internalAuthServiceClient) ValidateApiKey(ctx context.Context, in *Vali
 // All implementations must embed UnimplementedInternalAuthServiceServer
 // for forward compatibility.
 //
-// InternalAuthService provides a private API for the ingestion-service to
+// InternalAuthService provides a private API for the ingestion service to
 // validate API keys.
 type InternalAuthServiceServer interface {
 	// ValidateApiKey checks if an API key is valid.

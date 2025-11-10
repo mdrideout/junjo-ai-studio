@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"junjo-server/ingestion-service/backend_client"
-	"junjo-server/ingestion-service/logger"
-	"junjo-server/ingestion-service/storage"
+	"junjo-ai-studio/ingestion/backend_client"
+	"junjo-ai-studio/ingestion/logger"
+	"junjo-ai-studio/ingestion/storage"
 
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	// Otel imports
-	pb "junjo-server/ingestion-service/proto_gen"
+	pb "junjo-ai-studio/ingestion/proto_gen"
 
 	collogspb "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	colmetricpb "go.opentelemetry.io/proto/otlp/collector/metrics/v1"

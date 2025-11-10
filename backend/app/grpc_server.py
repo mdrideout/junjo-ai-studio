@@ -2,7 +2,7 @@
 gRPC server for internal authentication services.
 
 This module creates and manages a gRPC server that runs concurrently with FastAPI,
-providing the InternalAuthService for the ingestion-service to validate API keys.
+providing the InternalAuthService for the ingestion service to validate API keys.
 """
 
 import grpc

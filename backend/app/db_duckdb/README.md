@@ -43,7 +43,7 @@ Unlike SQLite (used for users/auth), DuckDB excels at analytical queries on larg
 ### 1. gRPC Client for Ingestion Service
 - **Create**: `app/ingestion_client/client.py`
 - **Implement**: `read_spans(start_key, batch_size)` gRPC call
-- **Connect to**: `junjo-server-ingestion:50052`
+- **Connect to**: `junjo-ai-studio-ingestion:50052`
 - **Proto**: Use existing ingestion service proto definitions
 - **Config**: Environment variables `INGESTION_GRPC_HOST`, `INGESTION_GRPC_PORT`
 
@@ -152,10 +152,10 @@ Unlike SQLite (used for users/auth), DuckDB excels at analytical queries on larg
 ## Architecture Reference
 
 **Go Backend DuckDB Implementation** (for reference):
-- `/Users/matt/repos/junjo-server/backend/db_duckdb/` - Schema and config
-- `/Users/matt/repos/junjo-server/backend/telemetry/otel_span_processor.go` - Span processing logic (305 lines)
-- `/Users/matt/repos/junjo-server/backend/api/otel/otel_spans_services.go` - Query endpoints (356 lines)
-- `/Users/matt/repos/junjo-server/backend/main.go` (lines 78-160) - Background poller
+- `/Users/matt/repos/junjo-ai-studio/backend/db_duckdb/` - Schema and config
+- `/Users/matt/repos/junjo-ai-studio/backend/telemetry/otel_span_processor.go` - Span processing logic (305 lines)
+- `/Users/matt/repos/junjo-ai-studio/backend/api/otel/otel_spans_services.go` - Query endpoints (356 lines)
+- `/Users/matt/repos/junjo-ai-studio/backend/main.go` (lines 78-160) - Background poller
 
 **Total DuckDB-related code in Go**: ~1,000 lines
 
@@ -165,12 +165,12 @@ Unlike SQLite (used for users/auth), DuckDB excels at analytical queries on larg
 
 **Development** (docker-compose.dev.yml):
 ```
-DB_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
+JUNJO_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
 ```
 
 **Production** (docker-compose.yml):
 ```
-DB_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
+JUNJO_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
 ```
 
 **Docker Volume**:

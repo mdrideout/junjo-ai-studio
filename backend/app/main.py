@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info("=" * 60)
-    logger.info("Starting Junjo Server")
+    logger.info("Starting Junjo AI Studio")
     logger.info("Python 3.13+ with Pydantic v2")
     logger.info(f"FastAPI Server: http://0.0.0.0:{settings.port}")
     logger.info(f"gRPC Server: [::]:{settings.GRPC_PORT}")
@@ -150,7 +150,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title="Junjo Server",
+    title="Junjo AI Studio",
     description="LLM Observability Platform - Python Backend",
     version="0.1.0",
     lifespan=lifespan,
@@ -212,7 +212,7 @@ async def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         version="0.1.0",
-        app_name="Junjo Server",
+        app_name="Junjo AI Studio",
     )
 
 
@@ -225,7 +225,7 @@ async def root() -> dict[str, str]:
         Dictionary containing app name, version, and health check link.
     """
     return {
-        "app": "Junjo Server",
+        "app": "Junjo AI Studio",
         "version": "0.1.0",
         "health": "/health",
     }

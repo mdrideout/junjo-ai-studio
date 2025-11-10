@@ -15,12 +15,12 @@ echo "Running All Backend Tests"
 echo "=========================================="
 
 # Set temp database paths
-export DB_SQLITE_PATH=/tmp/junjo-test-$(date +%s).db
-export DB_DUCKDB_PATH=/tmp/junjo-test-$(date +%s).duckdb
+export JUNJO_SQLITE_PATH=/tmp/junjo-test-$(date +%s).db
+export JUNJO_DUCKDB_PATH=/tmp/junjo-test-$(date +%s).duckdb
 
 echo "Using temp databases:"
-echo "  SQLite: $DB_SQLITE_PATH"
-echo "  DuckDB: $DB_DUCKDB_PATH"
+echo "  SQLite: $JUNJO_SQLITE_PATH"
+echo "  DuckDB: $JUNJO_DUCKDB_PATH"
 echo
 
 # Track test results

@@ -10,7 +10,7 @@ option go_package = ".;proto_gen";
 // Internal Services
 // -----------------------------------------------------------------------------
 
-// InternalAuthService provides a private API for the ingestion-service to
+// InternalAuthService provides a private API for the ingestion service to
 // validate API keys.
 service InternalAuthService {
   // ValidateApiKey checks if an API key is valid.

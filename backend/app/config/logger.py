@@ -37,7 +37,7 @@ def _text_formatter(record: dict) -> str:
 def setup_logging() -> None:
     """Configure loguru logger.
 
-    Sets up structured logging based on LOG_LEVEL and LOG_FORMAT:
+    Sets up structured logging based on JUNJO_LOG_LEVEL and JUNJO_LOG_FORMAT:
     - text format: Pretty-printed colorful logs to stdout
     - json format: JSON-formatted logs to stdout for container logging
     """

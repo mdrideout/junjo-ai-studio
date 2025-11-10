@@ -123,7 +123,7 @@ import tempfile
 
 # CRITICAL: Set BEFORE importing app code
 _test_base_dir = tempfile.mkdtemp(prefix="junjo_test_")
-os.environ["DB_SQLITE_PATH"] = f"{_test_base_dir}/production_stub.db"
+os.environ["JUNJO_SQLITE_PATH"] = f"{_test_base_dir}/production_stub.db"
 
 # NOW safe to import (db_config will use test path)
 from app.database.base import Base
@@ -172,12 +172,12 @@ async with db_config.async_session() as session:  # Correct!
 
 ❌ **DON'T: Try to use `:memory:` databases with Alembic**
 ```python
-os.environ["DB_SQLITE_PATH"] = ":memory:"  # Will fail!
+os.environ["JUNJO_SQLITE_PATH"] = ":memory:"  # Will fail!
 ```
 
 ✅ **DO: Use temporary file paths**
 ```python
-os.environ["DB_SQLITE_PATH"] = f"{tempfile.mkdtemp()}/test.db"
+os.environ["JUNJO_SQLITE_PATH"] = f"{tempfile.mkdtemp()}/test.db"
 ```
 
 ❌ **DON'T: Create lazy initialization with mutable globals**

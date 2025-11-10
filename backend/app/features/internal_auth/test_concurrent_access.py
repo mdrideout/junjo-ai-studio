@@ -28,7 +28,7 @@ async def test_concurrent_grpc_requests(test_api_key):
 
     Requires: gRPC server running on port 50053.
 
-    Simulates the ingestion-service making multiple concurrent API key
+    Simulates the ingestion service making multiple concurrent API key
     validation requests to the backend.
     """
     num_requests = 50
@@ -84,7 +84,7 @@ async def test_mixed_fastapi_and_grpc_requests():
 
     Simulates real-world usage where:
     - Users make REST API calls to FastAPI endpoints
-    - Ingestion-service makes gRPC calls for API key validation
+    - Ingestion  makes gRPC calls for API key validation
     Both should work without blocking each other.
     """
     num_grpc_requests = 25

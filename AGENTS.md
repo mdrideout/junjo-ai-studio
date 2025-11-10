@@ -1,14 +1,14 @@
-# Junjo Server: System Architecture for LLM Agents
+# Junjo AI Studio: System Architecture for LLM Agents
 
-This document provides a high-level overview of the Junjo Server architecture, designed to help LLM agents quickly understand the system's components and interaction flows.
+This document provides a high-level overview of the Junjo AI Studio architecture, designed to help LLM agents quickly understand the system's components and interaction flows.
 
 ## 1. System Overview
 
-The Junjo Server is a multi-service system designed for ingesting, storing, and analyzing OpenTelemetry (OTel) data. It consists of two primary backend services and client-side telemetry collection via the Junjo Otel Exporter.
+The Junjo AI Studio is a multi-service system designed for ingesting, storing, and analyzing OpenTelemetry (OTel) data. It consists of two primary backend services and client-side telemetry collection via the Junjo Otel Exporter.
 
 *   **`backend`**: The main application server. It handles user authentication, provides the API and web UI, and processes telemetry data for analysis.
-*   **`ingestion-service`**: A dedicated, high-throughput service responsible for receiving OTel data from clients and persisting it to a Write-Ahead Log (WAL).
-*   **Junjo Otel Exporter**: A specialized OpenTelemetry exporter that sends telemetry data to the ingestion-service.
+*   **`ingestion`**: A dedicated, high-throughput service responsible for receiving OTel data from clients and persisting it to a Write-Ahead Log (WAL).
+*   **Junjo Otel Exporter**: A specialized OpenTelemetry exporter that sends telemetry data to the ingestion.
 
 ## 2. Component Architecture
 
@@ -16,7 +16,7 @@ The services are designed to be decoupled, with specific responsibilities to ens
 
 ```mermaid
 flowchart TD
- subgraph s1["ingestion-service"]
+ subgraph s1["ingestion"]
         B{"BadgerDB WAL"}
         C("Internal gRPC API")
         A("gRPC Server")
@@ -57,33 +57,33 @@ flowchart TD
     *   Serves the main web UI and REST API on port `1323`.
     *   Manages user accounts and API keys.
     *   Provides an internal gRPC endpoint for validating API keys.
-    *   Reads data from the `ingestion-service` to index it into a queryable database (DuckDB) and vector store (QDrant).
+    *   Reads data from the `ingestion` to index it into a queryable database (DuckDB) and vector store (QDrant).
 *   **Internal Authentication Endpoint**:
     *   `J[Backend Internal Auth]`: Private gRPC endpoint for validating API keys.
 *   **Key Files**:
     *   [`backend/main.go`](backend/main.go): Main application entry point.
     *   [`backend/api/internal_auth/grpc_api_key_auth.go`](backend/api/internal_auth/grpc_api_key_auth.go): Internal gRPC API key validation service.
 
-### `ingestion-service`
+### `ingestion`
 
 *   **Responsibilities**:
     *   Exposes a public gRPC server on port `50051` that serves as the single point of contact for clients.
     *   **Enforces Authentication**: Protects its OTel endpoints using an API key interceptor that validates and caches keys using the backend's internal auth endpoint.
     *   Persists all incoming data to a highly-performant Write-Ahead Log (WAL) using BadgerDB.
 *   **Key Files**:
-    *   [`ingestion-service/main.go`](ingestion-service/main.go): Main application entry point.
-    *   [`ingestion-service/server/server.go`](ingestion-service/server/server.go): gRPC server setup.
-    *   [`ingestion-service/server/api_key_interceptor.go`](ingestion-service/server/api_key_interceptor.go): The API key authentication and caching logic.
-    *   [`ingestion-service/backend_client/auth_client.go`](ingestion-service/backend_client/auth_client.go): The client for the backend's internal API key validation service.
+    *   [`ingestion/main.go`](ingestion/main.go): Main application entry point.
+    *   [`ingestion/server/server.go`](ingestion/server/server.go): gRPC server setup.
+    *   [`ingestion/server/api_key_interceptor.go`](ingestion/server/api_key_interceptor.go): The API key authentication and caching logic.
+    *   [`ingestion/backend_client/auth_client.go`](ingestion/backend_client/auth_client.go): The client for the backend's internal API key validation service.
 
 ## 3. Authentication Flow (API Key-based)
 
-Authentication is handled via direct API key validation with caching, facilitated by the `ingestion-service` to provide secure and efficient access to the OTel ingestion endpoint.
+Authentication is handled via direct API key validation with caching, facilitated by the `ingestion` to provide secure and efficient access to the OTel ingestion endpoint.
 
 ```mermaid
 sequenceDiagram
     participant Client as OTel SDK Client
-    participant Ingestion as ingestion-service
+    participant Ingestion as ingestion
     participant Backend as backend
 
     loop OTel Data Export
@@ -112,7 +112,7 @@ sequenceDiagram
 
 ## 3.1. Python Backend Internal Authentication gRPC Service
 
-The Python backend (`backend_python`) now provides an **internal gRPC server** running concurrently with its FastAPI REST API. This gRPC service handles API key validation requests from the `ingestion-service`.
+The Python backend (`backend_python`) now provides an **internal gRPC server** running concurrently with its FastAPI REST API. This gRPC service handles API key validation requests from the `ingestion`.
 
 ### Architecture Overview
 
@@ -188,7 +188,7 @@ class InternalAuthServicer(auth_pb2_grpc.InternalAuthServiceServicer):
 **Key Features:**
 - **Fail-closed security**: Returns `is_valid=False` on any error (database errors, exceptions)
 - **Async database access**: Uses SQLAlchemy async sessions with proper isolation
-- **No caching**: Unlike the Go implementation, caching is handled by the ingestion-service
+- **No caching**: Unlike the Go implementation, caching is handled by the ingestion
 - **Structured logging**: Logs validation attempts with truncated key prefixes for security
 
 ### Database Access Pattern
@@ -210,16 +210,16 @@ This pattern ensures:
 
 ### Integration with Ingestion Service
 
-The `ingestion-service` connects to the Python backend's gRPC service:
+The `ingestion` connects to the Python backend's gRPC service:
 
 **Docker Compose Configuration:**
 ```yaml
-junjo-server-ingestion:
+junjo-ai-studio-ingestion:
   environment:
-    - BACKEND_GRPC_HOST=junjo-server-backend-python
+    - BACKEND_GRPC_HOST=junjo-ai-studio-backend
     - BACKEND_GRPC_PORT=50053
   depends_on:
-    junjo-server-backend-python:
+    junjo-ai-studio-backend:
       condition: service_healthy
 ```
 
@@ -267,13 +267,13 @@ This Python gRPC implementation **replaces** the Go backend's internal auth serv
 
 ## 4. Data Flow: WAL and Indexing
 
-The `ingestion-service` acts as a Write-Ahead Log (WAL) for the main `backend`. This decouples the high-throughput ingestion of OTel data from the more resource-intensive process of indexing that data for querying.
+The `ingestion` acts as a Write-Ahead Log (WAL) for the main `backend`. This decouples the high-throughput ingestion of OTel data from the more resource-intensive process of indexing that data for querying.
 
 ### Step-by-Step Process:
 
-1.  **Write to WAL**: The `ingestion-service` receives OTel data via its public gRPC endpoint and immediately writes the raw, serialized data to a BadgerDB WAL. This is a fast, append-only operation.
+1.  **Write to WAL**: The `ingestion` receives OTel data via its public gRPC endpoint and immediately writes the raw, serialized data to a BadgerDB WAL. This is a fast, append-only operation.
 
-2.  **Internal Read API**: The `ingestion-service` exposes a second, internal-only gRPC service (`WALReaderService`) that allows the `backend` to read data from the WAL in batches.
+2.  **Internal Read API**: The `ingestion` exposes a second, internal-only gRPC service (`WALReaderService`) that allows the `backend` to read data from the WAL in batches.
 
 3.  **Client Polling**: The `backend`'s `ingestion_client` periodically polls the `WALReaderService`, requesting a batch of spans starting from the last key it successfully processed.
 
@@ -281,11 +281,11 @@ The `ingestion-service` acts as a Write-Ahead Log (WAL) for the main `backend`. 
 
 5.  **Processing and Indexing**: Once the `backend` receives a batch of spans, it uses its `otel_span_processor` to deserialize, process, and index the data into a DuckDB database and vector store (QDrant), making it available for querying via the main API.
 
-This pull-based architecture makes the system resilient. The `ingestion-service` can continue to accept data even if the `backend` is temporarily down or slow to index.
+This pull-based architecture makes the system resilient. The `ingestion` can continue to accept data even if the `backend` is temporarily down or slow to index.
 
 ## 5. OpenInference Semantic Conventions
 
-Junjo Server uses **OpenInference** semantic conventions for LLM observability. OpenInference is a standardized format for capturing LLM-related telemetry data within OpenTelemetry spans.
+Junjo AI Studio uses **OpenInference** semantic conventions for LLM observability. OpenInference is a standardized format for capturing LLM-related telemetry data within OpenTelemetry spans.
 
 ### Key OpenInference Attributes
 
@@ -788,7 +788,7 @@ This will allow playground usage to be captured and analyzed like production LLM
 
 ## 7. Proto File Generation & Build Process
 
-Junjo Server uses Protocol Buffers for internal gRPC communication between services. The proto files define the API contracts for authentication and span ingestion between `backend` and `ingestion-service`.
+Junjo AI Studio uses Protocol Buffers for internal gRPC communication between services. The proto files define the API contracts for authentication and span ingestion between `backend` and `ingestion`.
 
 ### Proto File Locations
 
@@ -801,7 +801,7 @@ Junjo Server uses Protocol Buffers for internal gRPC communication between servi
   - `auth_pb2.py`, `auth_pb2_grpc.py`
   - `ingestion_pb2.py`, `ingestion_pb2_grpc.py`
   - `__init__.py`
-- **Ingestion Service (Go)**: `ingestion-service/proto_gen/`
+- **Ingestion Service (Go)**: `ingestion/proto_gen/`
   - `auth.pb.go`, `auth_grpc.pb.go`
   - `ingestion.pb.go`, `ingestion_grpc.pb.go`
 
@@ -820,9 +820,9 @@ This approach provides **four layers of protection** against stale proto code in
 
 #### Manual Generation (Development)
 
-**Go (ingestion-service)**:
+**Go (ingestion)**:
 ```bash
-cd ingestion-service
+cd ingestion
 make proto
 ```
 
@@ -842,7 +842,7 @@ The pre-commit hook automatically regenerates proto files before each commit:
 ```
 
 **What it does**:
-- Runs `make proto` for ingestion-service
+- Runs `make proto` for ingestion
 - Runs `generate_proto.sh` for backend
 - Stages any modified proto files automatically
 - Prevents commits with stale proto code
@@ -853,7 +853,7 @@ The pre-commit hook automatically regenerates proto files before each commit:
 
 Both services regenerate proto files during Docker builds as a safety mechanism:
 
-**Ingestion Service** (`ingestion-service/Dockerfile`):
+**Ingestion Service** (`ingestion/Dockerfile`):
 ```dockerfile
 # Install protoc and Go plugins
 RUN apk add --no-cache protobuf protobuf-dev && \
@@ -934,11 +934,11 @@ Even if the pre-commit hook somehow failed, Docker build generation ensures corr
 
 **Proto import errors in code**:
 - Regenerate manually: `cd backend && ./scripts/generate_proto.sh`
-- Check files exist in `backend/app/proto_gen/` and `ingestion-service/proto_gen/`
+- Check files exist in `backend/app/proto_gen/` and `ingestion/proto_gen/`
 
 # Code Organization & Principles
 
-This section documents the code organization conventions and architectural principles for the Junjo Server codebase. These guidelines help maintain consistency, enable feature-based development, and make the codebase accessible to both LLM agents and human developers.
+This section documents the code organization conventions and architectural principles for the Junjo AI Studio codebase. These guidelines help maintain consistency, enable feature-based development, and make the codebase accessible to both LLM agents and human developers.
 
 ## Core Principles
 
@@ -1001,8 +1001,8 @@ import (
     "github.com/labstack/echo/v4"
 
     // Local
-    "junjo-server/backend/db"
-    "junjo-server/backend/utils"
+    "junjo-ai-studio/backend/db"
+    "junjo-ai-studio/backend/utils"
 )
 
 // Code starts here
@@ -1813,7 +1813,7 @@ Shared code lives in `frontend/src/common/` or `frontend/src/shared/`:
 
 **What constitutes a feature?**
 
-Examples of features in Junjo Server:
+Examples of features in Junjo AI Studio:
 - `prompt-playground` - LLM prompt testing interface
 - `dashboard` - Main dashboard view
 - `api-keys` - API key management
@@ -2187,7 +2187,7 @@ backend_python/app/features/
 
 ### Python Package Structure and `__init__.py` Usage
 
-Python 3.3+ introduced **namespace packages**, which allow packages to work without `__init__.py` files. Junjo Server follows modern Python conventions by minimizing `__init__.py` usage.
+Python 3.3+ introduced **namespace packages**, which allow packages to work without `__init__.py` files. Junjo AI Studio follows modern Python conventions by minimizing `__init__.py` usage.
 
 **Guideline:** Minimize or eliminate `__init__.py` files unless they serve a functional purpose.
 

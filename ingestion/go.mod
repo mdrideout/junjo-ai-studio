@@ -1,9 +1,10 @@
-module junjo-server/ingestion-service
+module junjo-ai-studio/ingestion
 
 go 1.24.0
 
 require (
 	github.com/dgraph-io/badger/v4 v4.8.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 	github.com/maypok86/otter/v2 v2.2.1
 	github.com/oklog/ulid/v2 v2.1.1
 	go.opentelemetry.io/proto/otlp v1.8.0
@@ -18,7 +19,6 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/flatbuffers v25.2.10+incompatible // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

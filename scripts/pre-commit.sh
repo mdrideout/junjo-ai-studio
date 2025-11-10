@@ -70,10 +70,10 @@ check_tool_versions() {
 # Check versions before generating
 check_tool_versions
 
-# Function to generate Go proto files for ingestion-service
+# Function to generate Go proto files for ingestion
 generate_go_proto() {
-  echo "  → Generating Go proto files for ingestion-service..."
-  cd "$REPO_ROOT/ingestion-service"
+  echo "  → Generating Go proto files for ingestion..."
+  cd "$REPO_ROOT/ingestion"
 
   # Check if protoc is available
   if ! command -v protoc &> /dev/null; then

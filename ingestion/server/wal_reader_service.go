@@ -4,8 +4,8 @@ import (
 	"io"
 	"log/slog"
 
-	pb "junjo-server/ingestion-service/proto_gen"
-	"junjo-server/ingestion-service/storage"
+	pb "junjo-ai-studio/ingestion/proto_gen"
+	"junjo-ai-studio/ingestion/storage"
 )
 
 // WALReaderService implements the gRPC server for reading from the WAL.

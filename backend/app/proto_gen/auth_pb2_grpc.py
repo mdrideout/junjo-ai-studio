@@ -30,7 +30,7 @@ class InternalAuthServiceStub(object):
     Internal Services
     -----------------------------------------------------------------------------
 
-    InternalAuthService provides a private API for the ingestion-service to
+    InternalAuthService provides a private API for the ingestion service to
     validate API keys.
     """
 
@@ -52,7 +52,7 @@ class InternalAuthServiceServicer(object):
     Internal Services
     -----------------------------------------------------------------------------
 
-    InternalAuthService provides a private API for the ingestion-service to
+    InternalAuthService provides a private API for the ingestion service to
     validate API keys.
     """
 
@@ -84,7 +84,7 @@ class InternalAuthService(object):
     Internal Services
     -----------------------------------------------------------------------------
 
-    InternalAuthService provides a private API for the ingestion-service to
+    InternalAuthService provides a private API for the ingestion service to
     validate API keys.
     """
 

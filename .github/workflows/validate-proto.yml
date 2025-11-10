@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-          cache-dependency-path: ingestion-service/go.sum
+          cache-dependency-path: ingestion/go.sum
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -59,7 +59,7 @@ jobs:
 
       - name: Regenerate Go proto files
         run: |
-          cd ingestion-service
+          cd ingestion
           make proto
           cd ..
 
@@ -83,7 +83,7 @@ jobs:
             echo "🔧 To fix this issue:"
             echo "  1. Run: ./scripts/install-git-hooks.sh (to install pre-commit hooks)"
             echo "  2. Or regenerate manually:"
-            echo "     cd ingestion-service && make proto"
+            echo "     cd ingestion && make proto"
             echo "     cd ../backend && ./scripts/generate_proto.sh"
             echo "  3. Commit the updated proto files"
             echo ""

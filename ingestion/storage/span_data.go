@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	containerpb "junjo-server/ingestion-service/proto_gen"
+	containerpb "junjo-ai-studio/ingestion/proto_gen"
 
 	resourcepb "go.opentelemetry.io/proto/otlp/resource/v1"
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"

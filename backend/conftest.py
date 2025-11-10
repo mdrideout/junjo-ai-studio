@@ -18,12 +18,12 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 # Set test database paths BEFORE any app code gets imported
 # This ensures db_config.py (which creates engine at import time) uses test location
 #
-# Note: If DB_SQLITE_PATH is already set (e.g., from shell for gRPC tests),
+# Note: If JUNJO_SQLITE_PATH is already set (e.g., from shell for gRPC tests),
 # we respect that. Otherwise, create temp paths for unit/integration tests.
-if "DB_SQLITE_PATH" not in os.environ:
+if "JUNJO_SQLITE_PATH" not in os.environ:
     _test_base_dir = tempfile.mkdtemp(prefix="junjo_test_")
-    os.environ["DB_SQLITE_PATH"] = f"{_test_base_dir}/test.db"
-    os.environ["DB_DUCKDB_PATH"] = f"{_test_base_dir}/test.duckdb"
+    os.environ["JUNJO_SQLITE_PATH"] = f"{_test_base_dir}/test.db"
+    os.environ["JUNJO_DUCKDB_PATH"] = f"{_test_base_dir}/test.duckdb"
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)

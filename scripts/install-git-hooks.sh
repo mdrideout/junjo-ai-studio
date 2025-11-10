@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to install Git hooks for Junjo Server development
+# Script to install Git hooks for Junjo AI Studio development
 
 set -e
 
@@ -8,7 +8,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Installing Junjo Server Git hooks...${NC}"
+echo -e "${BLUE}Installing Junjo AI Studio Git hooks...${NC}"
 echo ""
 
 # Get the repository root

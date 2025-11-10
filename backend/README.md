@@ -1,6 +1,6 @@
-# Junjo Server - Backend Service
+# Junjo AI Studio - Backend Service
 
-FastAPI backend service for the Junjo Server LLM observability platform.
+FastAPI backend service for the Junjo AI Studio LLM observability platform.
 
 ## Overview
 
@@ -19,17 +19,17 @@ The backend service provides:
 
 ### Primary Method: Docker Compose (Recommended)
 
-**For running the full Junjo Server stack**, see the [root README.md](../README.md) Quick Start guide. The backend is part of the complete Docker Compose setup with all three services (backend, ingestion, frontend).
+**For running the full Junjo AI Studio stack**, see the [root README.md](../README.md) Quick Start guide. The backend is part of the complete Docker Compose setup with all three services (backend, ingestion, frontend).
 
 ```bash
 # From repository root
 docker compose up -d
 
 # View backend logs
-docker compose logs -f junjo-server-backend
+docker compose logs -f junjo-ai-studio-backend
 
 # Restart backend only
-docker compose restart junjo-server-backend
+docker compose restart junjo-ai-studio-backend
 ```
 
 The backend will be available at:
@@ -393,16 +393,16 @@ The backend reads configuration from environment variables (`.env` file at repos
 
 ```bash
 # Ports
-PORT=1323                       # Backend HTTP port
+JUNJO_BACKEND_PORT=1323         # Backend HTTP port
 GRPC_PORT=50053                 # Internal gRPC port
 
 # Database paths
-DB_SQLITE_PATH=/dbdata/sqlite/junjo.db
-DB_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
+JUNJO_SQLITE_PATH=/dbdata/sqlite/junjo.db
+JUNJO_DUCKDB_PATH=/dbdata/duckdb/traces.duckdb
 
 # Logging
-LOG_LEVEL=info                  # debug | info | warn | error
-LOG_FORMAT=text                 # json | text
+JUNJO_LOG_LEVEL=info            # debug | info | warn | error
+JUNJO_LOG_FORMAT=text           # json | text
 
 # LLM API keys (optional, for playground)
 OPENAI_API_KEY=sk-...
@@ -429,7 +429,7 @@ lsof -i :1323
 kill -9 <PID>
 
 # Or change the port in .env
-PORT=1324
+JUNJO_BACKEND_PORT=1324
 ```
 
 ### Module Import Errors
@@ -477,6 +477,6 @@ uv run pytest -m "integration" -v
 
 ## Additional Resources
 
-- **[Root README](../README.md)** - Full Junjo Server documentation
+- **[Root README](../README.md)** - Full Junjo AI Studio documentation
 - **[Deployment Guide](../docs/DEPLOYMENT.md)** - Production deployment instructions
 - **[Junjo Python Library](https://github.com/mdrideout/junjo)** - AI graph workflow framework

@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"log/slog"
 
-	"junjo-server/ingestion-service/storage"
+	"junjo-ai-studio/ingestion/storage"
 
 	coltracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )

@@ -1,4 +1,4 @@
-# Junjo Server - Universal Docker Compose Configuration
+# Junjo AI Studio - Universal Docker Compose Configuration
 #
 # This single compose file works for both development and production by using
 # the JUNJO_BUILD_TARGET environment variable to control build stages.
@@ -19,8 +19,8 @@
 # In production mode, the compiled/optimized code inside the container is used.
 
 services:
-  junjo-server-backend:
-    container_name: junjo-server-backend
+  junjo-ai-studio-backend:
+    container_name: junjo-ai-studio-backend
     restart: unless-stopped
     build:
       context: .
@@ -28,7 +28,7 @@ services:
       target: ${JUNJO_BUILD_TARGET:-production}
     volumes:
       # Database storage (required for all modes)
-      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
+      - ${JUNJO_HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
       # Source code (enables hot-reload in development mode via uvicorn --reload)
       - ./backend/app:/app/app
     ports:
@@ -40,24 +40,24 @@ services:
       - .env
     environment:
       # Override host/port for Docker network communication
-      - INGESTION_HOST=junjo-server-ingestion
+      - INGESTION_HOST=junjo-ai-studio-ingestion
       - INGESTION_PORT=50052
       # Enable migrations on startup
       - RUN_MIGRATIONS=true
-      # DB paths inherited from .env (DB_SQLITE_PATH, DB_DUCKDB_PATH)
+      # DB paths inherited from .env (JUNJO_SQLITE_PATH, JUNJO_DUCKDB_PATH)
 
-  junjo-server-ingestion:
-    container_name: junjo-server-ingestion
+  junjo-ai-studio-ingestion:
+    container_name: junjo-ai-studio-ingestion
     restart: unless-stopped
     build:
       context: .
-      dockerfile: ingestion-service/Dockerfile
+      dockerfile: ingestion/Dockerfile
       target: ${JUNJO_BUILD_TARGET:-production}
     volumes:
       # Source code (enables hot-reload in development mode via Air)
-      - ./ingestion-service:/app
+      - ./ingestion:/app
       # Database storage (required for all modes)
-      - ${HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
+      - ${JUNJO_HOST_DB_DATA_PATH:-./.dbdata}:/app/.dbdata
     ports:
       - "50051:50051"  # Public OTLP endpoint (authenticated via API key)
       # Port 50052 (internal gRPC) is NOT exposed - only accessible via Docker network
@@ -66,10 +66,10 @@ services:
     env_file:
       - .env
     environment:
-      - BACKEND_GRPC_HOST=junjo-server-backend
+      - BACKEND_GRPC_HOST=junjo-ai-studio-backend
       - BACKEND_GRPC_PORT=50053
     depends_on:
-      junjo-server-backend:
+      junjo-ai-studio-backend:
         condition: service_started
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50052"]
@@ -78,8 +78,8 @@ services:
       retries: 5
       start_period: 5s
 
-  junjo-server-frontend:
-    container_name: junjo-server-frontend
+  junjo-ai-studio-frontend:
+    container_name: junjo-ai-studio-frontend
     restart: unless-stopped
     build:
       context: .
@@ -97,7 +97,7 @@ services:
     env_file:
       - .env
     depends_on:
-      junjo-server-backend:
+      junjo-ai-studio-backend:
         condition: service_started
 
 volumes:
@@ -105,4 +105,5 @@ volumes:
 
 networks:
   junjo-network:
+    name: junjo_network
     driver: bridge

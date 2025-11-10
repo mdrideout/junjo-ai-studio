@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	pb "junjo-server/ingestion-service/proto_gen"
+	pb "junjo-ai-studio/ingestion/proto_gen"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,7 +26,7 @@ func NewAuthClient() (*AuthClient, error) {
 	// Defaults to old Go backend for backward compatibility
 	host := os.Getenv("BACKEND_GRPC_HOST")
 	if host == "" {
-		host = "junjo-server-backend" // Default to old Go backend
+		host = "junjo-ai-studio-backend" // Default to old Go backend
 	}
 
 	port := os.Getenv("BACKEND_GRPC_PORT")

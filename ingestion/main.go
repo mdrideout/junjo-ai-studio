@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"junjo-server/ingestion-service/backend_client"
-	"junjo-server/ingestion-service/logger"
-	"junjo-server/ingestion-service/server"
-	"junjo-server/ingestion-service/storage"
+	"junjo-ai-studio/ingestion/backend_client"
+	"junjo-ai-studio/ingestion/logger"
+	"junjo-ai-studio/ingestion/server"
+	"junjo-ai-studio/ingestion/storage"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	log.Info("starting ingestion service")
 
 	// --- BadgerDB Setup ---
-	dbPath := os.Getenv("BADGERDB_PATH")
+	dbPath := os.Getenv("JUNJO_BADGERDB_PATH")
 	if dbPath == "" {
 		// Default to a local directory for development
 		homeDir, err := os.UserHomeDir()

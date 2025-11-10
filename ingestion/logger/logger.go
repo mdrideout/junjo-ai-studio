@@ -7,14 +7,14 @@ import (
 )
 
 // InitLogger initializes and returns a configured slog.Logger based on environment variables.
-// It reads LOG_LEVEL (default: info) and LOG_FORMAT (default: json) from the environment.
+// It reads JUNJO_LOG_LEVEL (default: info) and JUNJO_LOG_FORMAT (default: json) from the environment.
 // The logger is also set as the default global logger via slog.SetDefault().
 func InitLogger() *slog.Logger {
-	// Parse LOG_LEVEL from env (default: info)
-	level := parseLogLevel(os.Getenv("LOG_LEVEL"))
+	// Parse JUNJO_LOG_LEVEL from env (default: info)
+	level := parseLogLevel(os.Getenv("JUNJO_LOG_LEVEL"))
 
-	// Parse LOG_FORMAT from env (default: json)
-	format := os.Getenv("LOG_FORMAT")
+	// Parse JUNJO_LOG_FORMAT from env (default: json)
+	format := os.Getenv("JUNJO_LOG_FORMAT")
 	if format == "" {
 		format = "json"
 	}
