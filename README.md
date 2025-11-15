@@ -70,8 +70,17 @@ Get Junjo AI Studio running on your local machine in 5 minutes using the **[Junj
    - Replace `your_base64_secret_here` in `JUNJO_SESSION_SECRET` with the first generated value
    - Replace `your_base64_key_here` in `JUNJO_SECURE_COOKIE_KEY` with the second generated value
 
+   **For production deployments**, also configure:
+   ```bash
+   JUNJO_ENV=production
+   JUNJO_PROD_FRONTEND_URL=https://app.example.com
+   JUNJO_PROD_BACKEND_URL=https://api.example.com
+   JUNJO_PROD_INGESTION_URL=https://ingestion.example.com
+   ```
+   See `.env.example` for complete production configuration options.
+
    _See the [Bare Bones template repository](https://github.com/mdrideout/junjo-server-bare-bones/blob/master/README.md) for in-depth configuration instructions._
- 
+
 4. **Create the Docker network** (first time only)
    ```bash
    docker network create junjo-network
@@ -239,11 +248,14 @@ JUNJO_SESSION_SECRET=your_base64_secret_here
 JUNJO_SECURE_COOKIE_KEY=your_base64_key_here
 
 # === CORS ==========================================================
-# Comma-separated list of allowed origins
-JUNJO_ALLOW_ORIGINS=http://localhost:5151,http://localhost:5153
+# IMPORTANT: Cannot use "*" with session cookies (credentials=True)
+# Default: http://localhost:5151,http://localhost:5153 (dev/prod build ports)
+# Production: Auto-derived from JUNJO_PROD_FRONTEND_URL if not set
+# Explicitly set for multiple frontends:
+# JUNJO_ALLOW_ORIGINS=https://app.example.com,https://admin.example.com
 
 # === Ports =========================================================
-PORT=1323                    # Backend HTTP port
+PORT=1323                   # Backend HTTP port
 INGESTION_PORT=50051        # OTLP ingestion gRPC port (public)
 GRPC_PORT=50053             # Backend internal gRPC port
 
