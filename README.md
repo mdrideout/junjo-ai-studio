@@ -542,17 +542,6 @@ Junjo AI Studio has comprehensive test coverage across all services. Tests are o
 
 ### Quick Start: Run All Tests
 
-4. **CORS misconfiguration**
-   - Frontend URL not in `JUNJO_ALLOW_ORIGINS`
-   - **Fix**: Add your frontend URL to the CORS origins list
-
-**See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#troubleshooting) for detailed troubleshooting guide.**
-
-### Port Conflicts
-
-**Symptom**: `Error: bind: address already in use`
-
-**Solution:**
 ```bash
 # Run all tests (backend, frontend, contract validation, proto validation)
 ./run-all-tests.sh

@@ -167,7 +167,7 @@ The Python backend (`backend`) now provides an **internal gRPC server** running 
 ### Architecture Overview
 
 The Python backend runs **two servers concurrently** in the same process:
-1. **FastAPI REST API** on port `1324` (public-facing)
+1. **FastAPI REST API** on port `1323` (public-facing)
 2. **gRPC server** on port `50053` (internal-only)
 
 Both servers share the same SQLite database connection pool and run asynchronously using Python's `asyncio`.
