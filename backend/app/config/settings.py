@@ -119,14 +119,6 @@ class SessionCookieSettings(BaseSettings):
             validation_alias="JUNJO_ENV",
         ),
     ]
-    junjo_prod_auth_domain: Annotated[
-        str,
-        Field(
-            default="",
-            description="Production auth domain for subdomain cookie support (e.g., 'junjo.io')",
-            validation_alias="JUNJO_PROD_AUTH_DOMAIN",
-        ),
-    ]
 
     @field_validator("secure_cookie_key", mode="before")
     @classmethod
