@@ -249,6 +249,106 @@ junjo-ai-studio-ingestion:
 - Database isolation under load
 - Verify no race conditions
 
+## 3.2. Web UI Session Cookie Authentication
+
+The web UI uses session-based authentication with encrypted, signed cookies for user authentication. This section explains the architecture and why subdomain deployments work without explicit domain configuration.
+
+### Session Cookie Configuration
+
+**Middleware Stack** (`backend/app/main.py`):
+
+```python
+# 1. Encryption middleware (outer layer)
+app.add_middleware(
+    SecureCookiesMiddleware,
+    secrets=[settings.session_cookie.secure_cookie_key],  # AES-256 encryption
+)
+
+# 2. Session middleware (inner layer)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.session_cookie.session_secret,  # HMAC signing
+    max_age=86400 * 30,  # 30 days
+    https_only=is_production,  # HTTPS-only in production
+    same_site="strict",  # CSRF protection
+    # NO domain parameter - see explanation below
+)
+```
+
+### Why No Domain Parameter Is Needed
+
+**Design Decision:** Junjo AI Studio does NOT use the `domain` parameter for session cookies, even in production with subdomain deployments.
+
+**Rationale:**
+
+1. **SameSite Uses Registrable Domain (eTLD+1)**
+   - `SameSite=Strict` cookies use the "registrable domain" (e.g., `example.com`), not individual subdomains
+   - `api.example.com` and `app.example.com` share the same registrable domain: `example.com`
+   - Browsers automatically recognize these as "same-site" without needing explicit domain configuration
+
+2. **Automatic Cross-Subdomain Cookie Sending**
+   - When backend at `api.example.com` sets a session cookie (without `domain` parameter)
+   - Frontend at `app.example.com` automatically sends it in API requests
+   - Browser behavior: "If domain is not specified, defaults to the host that set the cookie, but cookie is still sent to same-site subdomains"
+
+3. **Security Benefits of Omitting Domain Parameter**
+   - **No wildcard exposure**: Cookie is tied to the specific subdomain that set it
+   - **Defense against subdomain takeover**: If an attacker compromises `attacker.example.com`, they cannot directly access cookies set by `api.example.com`
+   - **Principle of least privilege**: Cookie scope is as narrow as possible while still supporting legitimate same-site requests
+
+4. **Simplicity**
+   - No need to configure production domain in environment variables
+   - No risk of misconfiguration (e.g., setting domain to `.example.com` when it should be `example.com`)
+   - Works identically in development (`localhost`) and production (subdomains)
+
+### Deployment Architecture Requirements
+
+**Supported Configurations** (all work without domain parameter):
+- ✅ `api.example.com` + `app.example.com` (subdomain + subdomain)
+- ✅ `api.example.com` + `example.com` (subdomain + apex)
+- ✅ `example.com` + `app.example.com` (apex + subdomain)
+
+**Unsupported Configurations**:
+- ❌ `app.example.com` + `service.run.app` (different registrable domains - cross-site)
+
+**Why Cross-Domain Fails**:
+- `example.com` and `run.app` are different registrable domains
+- `SameSite=Strict` blocks all cookies in cross-site requests
+- No amount of configuration can make this work (by design - security feature)
+
+### Cookie Attributes Breakdown
+
+| Attribute | Value | Purpose |
+|-----------|-------|---------|
+| `secure` | `true` (production) | HTTPS-only transmission |
+| `httponly` | `true` | Prevents JavaScript access (XSS protection) |
+| `samesite` | `strict` | CSRF protection (no cross-site requests) |
+| `max_age` | `2592000` (30 days) | Session expiration |
+| `domain` | **Not set** | Defaults to host, works with same-site subdomains |
+
+### Testing
+
+**Unit Tests** (`backend/app/features/auth/test_router.py`):
+- Sign-in/sign-out flow with cookie verification
+- Session persistence across requests
+- Cookie expiration handling
+
+**Integration Tests**:
+- Cross-subdomain cookie sending (simulated)
+- HTTPS-only enforcement in production mode
+- SameSite=Strict behavior verification
+
+### Historical Note
+
+**Removed Configuration:** An earlier design included `JUNJO_PROD_AUTH_DOMAIN` environment variable for setting the `domain` parameter explicitly. This was removed because:
+
+1. **Not necessary**: Browser SameSite behavior handles subdomain cookies correctly without it
+2. **Added complexity**: Required users to configure production domain, risking misconfiguration
+3. **Less secure**: Explicit domain parameter can widen cookie scope unnecessarily
+4. **Simplified deployment**: Fewer environment variables to manage
+
+See commit history for details on the removal of `JUNJO_PROD_AUTH_DOMAIN`.
+
 ## 4. Data Flow: WAL and Indexing
 
 The `ingestion` acts as a Write-Ahead Log (WAL) for the main `backend`. This decouples the high-throughput ingestion of OTel data from the more resource-intensive process of indexing that data for querying.
