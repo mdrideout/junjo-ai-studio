@@ -208,7 +208,7 @@ The `backend` service polls the `ingestion`'s internal gRPC API to read batches 
 
 ---
 
-## Prerequisites
+## Prerequisites 
 
 ### Required
 - **Docker** and **Docker Compose** (for both development and production)
