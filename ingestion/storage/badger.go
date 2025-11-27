@@ -156,6 +156,12 @@ func (s *Storage) ReadSpans(startKey []byte, batchSize uint32, sendFunc func(key
 			item := it.Item()
 			key := item.Key()
 
+			// Skip internal counter key - it's not a span
+			if bytes.Equal(key, []byte(CounterKey)) {
+				it.Next()
+				continue
+			}
+
 			// Track the last key we process (even if corrupted)
 			// Make a copy because the key slice is reused by BadgerDB
 			lastKeyProcessed = append([]byte(nil), key...)
