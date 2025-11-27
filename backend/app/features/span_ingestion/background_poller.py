@@ -67,27 +67,58 @@ async def span_ingestion_poller() -> None:
                 logger.debug("Polling for new spans")
 
                 # 1. Read spans from ingestion service
-                spans_with_resources = await client.read_spans(
+                spans_with_resources, remaining_count = await client.read_spans(
                     last_key, batch_size=settings.span_ingestion.SPAN_BATCH_SIZE
                 )
 
                 if not spans_with_resources:
-                    logger.debug("No new spans found")
+                    logger.debug(
+                        "No new spans found",
+                        extra={"remaining_unretrieved": remaining_count},
+                    )
                     continue
 
-                logger.info(f"Received {len(spans_with_resources)} spans from ingestion service")
+                logger.info(
+                    f"Received {len(spans_with_resources)} spans from ingestion service",
+                    extra={"remaining_unretrieved": remaining_count},
+                )
 
-                # 2. Update last_key for next poll
+                # 2. Update last_key for next poll (even if spans are empty/corrupted)
                 last_key = spans_with_resources[-1].key_ulid
 
-                # 3. Unmarshal spans and extract per-span service names
-                spans_with_service_names = unmarshal_spans_with_service_names(spans_with_resources)
+                # 3. Filter out dummy cursor-advancing spans (empty span_bytes)
+                real_spans = [s for s in spans_with_resources if s.span_bytes]
+
+                if not real_spans:
+                    # All spans were corrupted/empty - cursor was advanced automatically
+                    logger.info(
+                        "Cursor advanced past corrupted spans, no processable data in batch",
+                        extra={
+                            "batch_size": len(spans_with_resources),
+                            "remaining_unretrieved": remaining_count,
+                            "last_key": last_key.hex(),
+                        },
+                    )
+                    # Save the advanced cursor position
+                    async with async_session() as session:
+                        repo = PollerStateRepository(session)
+                        await repo.upsert_last_key(last_key)
+                        await session.commit()
+                    continue
+
+                # 4. Unmarshal spans and extract per-span service names
+                spans_with_service_names = unmarshal_spans_with_service_names(real_spans)
 
                 if not spans_with_service_names:
                     logger.warning(
-                        "All spans failed to process, skipping batch",
-                        extra={"received": len(spans_with_resources)},
+                        "All spans failed to unmarshal, skipping batch",
+                        extra={"received": len(real_spans)},
                     )
+                    # Still save cursor to avoid infinite retry
+                    async with async_session() as session:
+                        repo = PollerStateRepository(session)
+                        await repo.upsert_last_key(last_key)
+                        await session.commit()
                     continue
 
                 # 4. Process spans in batch (single transaction, correct service names)

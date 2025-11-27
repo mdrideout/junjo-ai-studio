@@ -1,0 +1,20 @@
+{
+  "config": {
+    "num_services": 3,
+    "num_cycles": 10,
+    "duration_seconds": null,
+    "concurrency": 2
+  },
+  "services": [
+    "just-infrared-chinchilla",
+    "zealous-malachite-narwhal",
+    "determined-purple-wolverine"
+  ],
+  "results": {
+    "total_workflows": 30,
+    "cycles_completed": 10,
+    "workflows_per_service": 10,
+    "duration_seconds": 1.27,
+    "throughput": 23.66
+  }
+}

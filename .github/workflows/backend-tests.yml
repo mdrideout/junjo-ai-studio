@@ -19,7 +19,7 @@ jobs:
     name: Run Backend Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Note: Proto files are validated by validate-proto.yml workflow
+    # Note: Proto files are validated by proto-staleness-check.yml workflow
     # This job assumes proto files are already generated and committed
 
     steps:
