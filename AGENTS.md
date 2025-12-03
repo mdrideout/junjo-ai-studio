@@ -13,6 +13,13 @@
   - [3. Authentication](#3-authentication)
     - [API Key Auth (OTel Data)](#api-key-auth-otel-data)
     - [Session Cookie Auth (Web UI)](#session-cookie-auth-web-ui)
+  - [3.1. Python Backend Internal Authentication gRPC Service](#31-python-backend-internal-authentication-grpc-service)
+    - [Architecture Overview](#architecture-overview)
+    - [Concurrent Server Implementation](#concurrent-server-implementation)
+    - [gRPC Service Implementation](#grpc-service-implementation)
+    - [Database Access Pattern](#database-access-pattern)
+    - [Integration with Ingestion Service](#integration-with-ingestion-service)
+    - [Testing](#testing)
   - [4. Data Flow: WAL and Indexing](#4-data-flow-wal-and-indexing)
   - [5. OpenInference Conventions](#5-openinference-conventions)
   - [6. Prompt Playground](#6-prompt-playground)
@@ -34,7 +41,7 @@ Junjo AI Studio ingests, stores, and analyzes OpenTelemetry (OTel) data from LLM
 
 **Three components:**
 - **`backend`** (Python/FastAPI): User auth, web UI, API, data processing
-- **`ingestion`** (Go): High-throughput OTel data receiver with WAL (BadgerDB)
+- **`ingestion`** (Go): High-throughput OTel data receiver with WAL (SQLite)
 - **Junjo Otel Exporter** (TypeScript): Client library for sending OTel data
 
 **Simple flow:** Client → Ingestion (write to WAL) → Backend (read, index, query)
@@ -46,7 +53,7 @@ Junjo AI Studio ingests, stores, and analyzes OpenTelemetry (OTel) data from LLM
 ```mermaid
 flowchart TD
  subgraph ingestion["ingestion (Go)"]
-        WAL{"BadgerDB WAL"}
+        WAL{"SQLite WAL"}
         ReadAPI("gRPC Read API")
         WriteAPI("gRPC Write API")
         APIKeyAuth{"API Key Auth"}
@@ -96,7 +103,7 @@ grpc_task = asyncio.create_task(start_grpc_server_background())
 **What it does:**
 - Public gRPC server (port 50051) for OTel data
 - Validates API keys (with caching)
-- Writes to BadgerDB WAL (fast, append-only)
+- Writes to SQLite WAL (fast, append-only)
 
 **Key files:**
 - `ingestion/main.go` - Entry point
@@ -288,15 +295,18 @@ junjo-ai-studio-ingestion:
 - Test valid keys, invalid keys, empty keys, database errors
 
 **Integration Tests** (`app/features/internal_auth/test_grpc_integration.py`):
-- Connect to real gRPC server on port 50053
-- Test with actual API keys from database
+- Connect to real in-process gRPC server (started by `grpc_server_for_tests` fixture)
+- Uses isolated test database (via `test_database` fixture)
+- Test with actual API keys created in the test DB
 - Verify server connectivity and response format
 
 **Concurrent Access Tests** (`app/features/internal_auth/test_concurrent_access.py`):
-- 50+ concurrent gRPC requests
+- 50+ concurrent gRPC requests against in-process server
 - Mixed FastAPI + gRPC traffic
 - Database isolation under load
 - Verify no race conditions
+
+**Testing Note**: Do NOT run `uvicorn` before running these tests. The tests manage their own gRPC server lifecycle to ensure database isolation. If port 50053 is in use by an external process, tests will fail.
 
 ## 4. Data Flow: WAL and Indexing
 
@@ -306,7 +316,7 @@ junjo-ai-studio-ingestion:
 - Backend can catch up at its own pace
 
 **Process:**
-1. **Write**: Ingestion writes serialized OTel data to BadgerDB
+1. **Write**: Ingestion writes serialized OTel data to SQLite
 2. **Read**: Backend polls `WALReaderService` for batches
 3. **Track**: Backend stores last processed key in database
 4. **Process**: Backend deserializes, indexes to DuckDB/QDrant
@@ -671,7 +681,7 @@ def otlp_endpoint(self) -> str:
 4. **All use same proto** → No mismatch between services
 
 **Simple parts:**
-- One WAL (BadgerDB)
+- One WAL (SQLite)
 - One query DB (DuckDB)
 - One vector DB (QDrant)
 - Two auth methods (API key, session cookie)
